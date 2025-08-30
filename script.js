@@ -179,6 +179,7 @@ async function loadLookupsAndPopulate() {
         const div = document.createElement('div'); div.className = 'pkg-card';
         const h = document.createElement('h3'); h.textContent = p.name;
         const d = document.createElement('p'); d.textContent = `المدة: ${p.duration || (p.raw && p.raw['مدة الباقة باليوم'] ? p.raw['مدة الباقة باليوم'] : '')} يوم`;
+        const d = document.createElement('p'); d.textContent = `السعر: ${p.duration || (p.raw && p.raw['سعر الباقة'] ? p.raw['سعر الباقة'] : '')} جنيها`;
         const desc = document.createElement('p'); desc.textContent = p.raw && (p.raw['وصف الباقة'] || p.raw['description']) ? (p.raw['وصف الباقة'] || p.raw['description']) : '';
         const btn = document.createElement('button'); btn.className = 'choose-pkg'; btn.textContent = 'اختر الباقة';
         btn.onclick = () => choosePackageAPI(p.id);
