@@ -2,7 +2,7 @@
 // Main improvement: after uploading images to Drive (client-side) we immediately render the new/updated ad
 // using the returned Drive/ImgBB URLs rather than waiting for the sheet to contain links.
 // Also render a visible placeholder (filename) when the ad has name but no URL (so UI is not empty).
-const API_URL = 'https://script.google.com/macros/s/AKfycbx-fMI2hsJ5LvKKh9fzd3Vidn2TeGtEbHV9Nyj2nZBy9xQk9Uy_uL-m3hrDqp1uUWAPwA/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbwB0VE5COC0e6NQNKrxQeNRu2Mtt_QuMbVoBrH7tE6Da3X3BP6UxK926bt9fDO0WPU5/exec';
 
 let currentTab = 'places';
 let uploadedImages = [];
