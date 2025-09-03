@@ -6330,7 +6330,7 @@
 
 
 // ============ إعدادات عامة ====================
-const API_URL = 'YOUR_DEPLOYED_WEB_APP_URL';
+const API_URL = 'https://script.google.com/macros/s/AKfycbwB0VE5COC0e6NQNKrxQeNRu2Mtt_QuMbVoBrH7tE6Da3X3BP6UxK926bt9fDO0WPU5/exec';
 let currentTab = 'places';
 let uploadedImages = [];
 let uploadedVideos = [];
