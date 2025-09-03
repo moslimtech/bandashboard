@@ -202,7 +202,7 @@
 //           div.insertBefore(badge, h);
 //         }
 
-//         if (isCurrent && currentPkgStatus === 'نشطة') {
+//         if (isCurrent && currentPkgStatus === 'مفعلة') {
 //           btn.textContent = 'هذه باقتك';
 //           btn.disabled = true;
 //         } else if (isCurrent && currentPkgStatus === 'قيد الدفع') {
@@ -1522,7 +1522,7 @@
 //       if (inlineText) inlineText.textContent = 'باقتك الحالية: لا يوجد اشتراك';
 //       return;
 //     }
-//     if (pkgStatus === 'نشطة') {
+//     if (pkgStatus === 'مفعلة') {
 //       showCards();
 //       const pn = packageName || (pkgId ? `ID ${pkgId}` : 'غير معروفة');
 //       const eTxt = endDate ? endDate.toISOString().split('T')[0] : '';
@@ -1603,7 +1603,7 @@
 //       const place = getLoggedPlace() || {};
 //       place.raw = place.raw || {};
 //       place.raw['الباقة'] = packageId;
-//       place.raw['حالة الباقة'] = 'نشطة'; // مفعّلة
+//       place.raw['حالة الباقة'] = 'مفعلة'; // مفعّلة
 //       if (returned && returned.start) place.raw['تاريخ بداية الاشتراك'] = returned.start;
 //       if (returned && returned.end) place.raw['تاريخ نهاية الاشتراك'] = returned.end;
 //       if (returned && returned.trialActivated) place.raw['حالة الباقة التجريبية'] = 'true';
@@ -1638,7 +1638,7 @@
 //           place.raw['تاريخ بداية الاشتراك'] = returned.start;
 //           place.raw['تاريخ نهاية الاشتراك'] = returned.end;
 //           place.raw['الباقة'] = packageId;
-//           place.raw['حالة الباقة'] = 'نشطة';
+//           place.raw['حالة الباقة'] = 'مفعلة';
 //           if (returned.trialActivated) place.raw['حالة الباقة التجريبية'] = 'true';
 //           setLoggedPlace(place);
 //         }
@@ -1827,7 +1827,7 @@
 //       text.textContent = 'باقتك الحالية: لا يوجد اشتراك';
 //       return;
 //     }
-//     if (pkgStatus === 'نشطة') {
+//     if (pkgStatus === 'مفعلة') {
 //       const today = new Date();
 //       let remaining = (startDate && endDate) ? daysBetween(today, endDate) : null;
 //       if (remaining !== null && remaining < 0) remaining = 0;
@@ -2080,7 +2080,7 @@ async function loadLookupsAndPopulate() {
 
     window.lastLookups = data;
 
-    // تعبئة قوائم الأنشطة
+    // تعبئة قوائم الأمفعلة
     populateSelect('select[name="activityType"]', data.activities, 'اختر نوع النشاط');
     
     // تعبئة قوائم المدن
@@ -2226,7 +2226,7 @@ function setupPackagesGrid(packages) {
     btn.className = 'choose-pkg';
     
     // تحديد نص الزر
-    if (isCurrent && currentPkgStatus === 'نشطة') {
+    if (isCurrent && currentPkgStatus === 'مفعلة') {
       btn.textContent = 'هذه باقتك';
       btn.disabled = true;
     } else if (isCurrent && currentPkgStatus === 'قيد الدفع') {
@@ -2303,7 +2303,7 @@ async function choosePackage(packageId, price = 0) {
       showSuccess('تم إنشاء طلب دفع. اتبع الإرشادات لإرسال إيصال الدفع');
     } else {
       // باقة مجانية أو تفعيل مباشر
-      updateLocalPackageStatus(packageId, 'نشطة', result);
+      updateLocalPackageStatus(packageId, 'مفعلة', result);
       showSuccess(result.message || 'تم تفعيل الباقة بنجاح');
     }
     
@@ -3768,7 +3768,7 @@ async function refreshPackageUI() {
       return;
     }
 
-    if (packageStatus === 'نشطة') {
+    if (packageStatus === 'مفعلة') {
       showPackageCards();
       const displayName = packageName || (packageId ? `ID ${packageId}` : 'غير معروفة');
       const endDateText = endDate ? endDate.toISOString().split('T') : '';
@@ -3985,7 +3985,7 @@ function showTab(tabName) {
     content.style.display = 'none';
   });
   
-  // إزالة الفئة النشطة من كل التبويبات
+  // إزالة الفئة المفعلة من كل التبويبات
   document.querySelectorAll('.tab').forEach(tab => {
     tab.classList.remove('active');
   });
@@ -4205,7 +4205,7 @@ function updateInlinePackageInfo(place) {
       return;
     }
 
-    if (packageStatus === 'نشطة') {
+    if (packageStatus === 'مفعلة') {
       const today = new Date();
       let remainingDays = (startDate && endDate) ? daysBetween(today, endDate) : null;
       if (remainingDays !== null && remainingDays < 0) remainingDays = 0;
