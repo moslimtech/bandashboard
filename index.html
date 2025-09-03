@@ -1,4 +1,4 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
@@ -7,7 +7,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
     <style>
-        /* CSS مدمج داخل الملف */
         :root {
             --primary-color: #4f46e5;
             --primary-hover: #4338ca;
@@ -34,7 +33,6 @@
             background-color: var(--background-color);
             color: var(--text-primary);
             line-height: 1.6;
-            transition: all 0.3s ease;
         }
 
         body.dark {
@@ -51,7 +49,6 @@
             padding: 20px;
         }
 
-        /* Header */
         .header {
             background: linear-gradient(135deg, var(--primary-color) 0%, #6366f1 100%);
             color: white;
@@ -83,11 +80,10 @@
             display: flex;
             align-items: center;
             gap: 1rem;
-            flex-wrap: wrap;
         }
 
         .user-info {
-            display: flex;
+            display: none;
             align-items: center;
             gap: 0.5rem;
         }
@@ -102,62 +98,29 @@
             font-size: 0.9rem;
             font-weight: 500;
             transition: all 0.3s ease;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
         }
 
         .btn:hover {
             background: var(--primary-hover);
-            transform: translateY(-1px);
         }
 
         .btn:disabled {
             background: #9ca3af;
             cursor: not-allowed;
-            transform: none;
         }
 
         .btn-secondary {
             background: #6b7280;
         }
 
-        .btn-secondary:hover {
-            background: #4b5563;
-        }
-
         .btn-success {
             background: var(--success-color);
-        }
-
-        .btn-success:hover {
-            background: #059669;
         }
 
         .btn-danger {
             background: var(--error-color);
         }
 
-        .btn-danger:hover {
-            background: #dc2626;
-        }
-
-        .theme-toggle {
-            background: rgba(255, 255, 255, 0.2);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            color: white;
-            padding: 0.5rem;
-            border-radius: 50%;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .theme-toggle:hover {
-            background: rgba(255, 255, 255, 0.3);
-        }
-
-        /* Tabs */
         .tabs {
             display: flex;
             background: var(--card-background);
@@ -177,15 +140,10 @@
             font-weight: 500;
             color: var(--text-secondary);
             transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
         }
 
         .tab:hover {
             background: rgba(79, 70, 229, 0.1);
-            color: var(--primary-color);
         }
 
         .tab.active {
@@ -193,68 +151,34 @@
             color: white;
         }
 
-        /* Tab Content */
         .tab-content {
             background: var(--card-background);
             border-radius: 8px;
             padding: 2rem;
             box-shadow: var(--shadow);
             margin-bottom: 2rem;
+            display: none;
         }
 
-        /* Status Bars */
         #placeStatusBar {
             background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
             color: white;
             padding: 15px;
             border-radius: 8px;
             margin: 10px 0;
-            box-shadow: var(--shadow);
+            display: none;
         }
 
-        #placeStatusMessage {
-            margin-bottom: 10px;
-            font-weight: 600;
-        }
-
-        #placeStatusButtons {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        .status-btn {
-            background: rgba(255, 255, 255, 0.2);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            color: white;
-            padding: 8px 12px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.85rem;
-            transition: all 0.3s ease;
-        }
-
-        .status-btn:hover {
-            background: rgba(255, 255, 255, 0.3);
-        }
-
-        .status-btn.active {
-            background: rgba(255, 255, 255, 0.9);
-            color: #d97706;
-            font-weight: 600;
-        }
-
-        /* Subscription Status Bar - الشريط الجديد */
         #subscriptionStatusBar {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             padding: 15px;
             border-radius: 8px;
             margin: 10px 0;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            display: none;
         }
 
-        #subscriptionStatusBar .subscription-content {
+        .subscription-content {
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -262,28 +186,6 @@
             gap: 10px;
         }
 
-        #subscriptionTitle {
-            margin: 0 0 5px 0;
-            font-size: 16px;
-            font-weight: 600;
-        }
-
-        #subscriptionDetails {
-            margin: 0;
-            font-size: 14px;
-            opacity: 0.9;
-        }
-
-        #subscriptionCountdown {
-            background: rgba(255,255,255,0.2);
-            padding: 8px 12px;
-            border-radius: 6px;
-            font-weight: 600;
-            min-width: 120px;
-            text-align: center;
-        }
-
-        /* Forms */
         .form-group {
             margin-bottom: 1.5rem;
         }
@@ -303,13 +205,6 @@
             font-size: 1rem;
             background: var(--card-background);
             color: var(--text-primary);
-            transition: all 0.3s ease;
-        }
-
-        .form-control:focus {
-            outline: none;
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
         }
 
         .form-row {
@@ -318,50 +213,10 @@
             gap: 1rem;
         }
 
-        /* Preview */
-        .preview {
-            margin-top: 1rem;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-        }
-
-        .preview img {
-            width: 100px;
-            height: 100px;
-            object-fit: cover;
-            border-radius: 6px;
-            border: 2px solid var(--border-color);
-        }
-
-        .preview-image {
-            position: relative;
-            display: inline-block;
-        }
-
-        .remove-image {
-            position: absolute;
-            top: -5px;
-            right: -5px;
-            background: var(--error-color);
-            color: white;
-            border: none;
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            cursor: pointer;
-            font-size: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        /* Packages Grid */
         .packages-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 1.5rem;
-            margin-top: 2rem;
         }
 
         .pkg-card {
@@ -371,8 +226,6 @@
             padding: 1.5rem;
             box-shadow: var(--shadow);
             transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
         }
 
         .pkg-card:hover {
@@ -380,21 +233,6 @@
             box-shadow: var(--shadow-lg);
         }
 
-        .pkg-card h3 {
-            margin-bottom: 1rem;
-            color: var(--primary-color);
-            font-size: 1.2rem;
-        }
-
-        .choose-pkg {
-            width: 100%;
-            margin-top: 1rem;
-            padding: 0.75rem;
-            font-size: 1rem;
-            font-weight: 600;
-        }
-
-        /* Ads */
         .ad-card {
             background: var(--card-background);
             border: 1px solid var(--border-color);
@@ -404,39 +242,6 @@
             box-shadow: var(--shadow);
         }
 
-        .ad-card h4 {
-            margin-bottom: 0.5rem;
-            color: var(--primary-color);
-        }
-
-        .ad-card .meta {
-            color: var(--text-secondary);
-            font-size: 0.9rem;
-            margin-bottom: 1rem;
-        }
-
-        .ad-actions {
-            display: flex;
-            gap: 0.5rem;
-            margin-top: 1rem;
-        }
-
-        .ad-images {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-            margin: 1rem 0;
-        }
-
-        .ad-images img {
-            width: 80px;
-            height: 80px;
-            object-fit: cover;
-            border-radius: 6px;
-            border: 1px solid var(--border-color);
-        }
-
-        /* Alerts */
         .alert {
             padding: 1rem;
             margin: 1rem 0;
@@ -457,17 +262,6 @@
             border: 1px solid #fca5a5;
         }
 
-        body.dark .alert-success {
-            background: #064e3b;
-            color: #a7f3d0;
-        }
-
-        body.dark .alert-error {
-            background: #7f1d1d;
-            color: #fca5a5;
-        }
-
-        /* Loading */
         #loading {
             position: fixed;
             top: 0;
@@ -495,7 +289,6 @@
             100% { transform: rotate(360deg); }
         }
 
-        /* Modal */
         .modal {
             position: fixed;
             top: 0;
@@ -518,127 +311,52 @@
             box-shadow: var(--shadow-lg);
         }
 
-        .modal-header {
+        .preview {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1rem;
-        }
-
-        .modal-title {
-            font-size: 1.5rem;
-            font-weight: 600;
-            color: var(--text-primary);
-        }
-
-        .modal-close {
-            background: none;
-            border: none;
-            font-size: 1.5rem;
-            cursor: pointer;
-            color: var(--text-secondary);
-        }
-
-        /* Auto-locate button */
-        .auto-locate-btn {
-            background: var(--success-color);
+            flex-wrap: wrap;
+            gap: 0.5rem;
             margin-top: 0.5rem;
-            width: 100%;
         }
 
-        .auto-locate-btn:hover {
-            background: #059669;
+        .preview img {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 6px;
+            border: 2px solid var(--border-color);
         }
 
-        /* Responsive */
+        .status-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 0 5px;
+        }
+
+        .status-btn.active {
+            background: rgba(255, 255, 255, 0.9);
+            color: #d97706;
+            font-weight: 600;
+        }
+
         @media (max-width: 768px) {
-            .container {
-                padding: 10px;
-            }
-
-            .header-content {
-                flex-direction: column;
-                text-align: center;
-            }
-
-            .tabs {
-                flex-direction: column;
-            }
-
-            .tab {
-                border-bottom: 1px solid var(--border-color);
-            }
-
-            .tab:last-child {
-                border-bottom: none;
-            }
-
             .form-row {
                 grid-template-columns: 1fr;
             }
-
+            
             .packages-grid {
                 grid-template-columns: 1fr;
             }
-
-            .ad-actions {
-                flex-direction: column;
-            }
-
-            #subscriptionStatusBar .subscription-content {
-                flex-direction: column;
-                text-align: center;
-            }
-
-            #subscriptionCountdown {
-                width: 100%;
-            }
-        }
-
-        /* Utility Classes */
-        .text-center {
-            text-align: center;
-        }
-
-        .text-success {
-            color: var(--success-color);
-        }
-
-        .text-error {
-            color: var(--error-color);
-        }
-
-        .mb-1 {
-            margin-bottom: 0.5rem;
-        }
-
-        .mb-2 {
-            margin-bottom: 1rem;
-        }
-
-        .mb-3 {
-            margin-bottom: 1.5rem;
-        }
-
-        .mt-1 {
-            margin-top: 0.5rem;
-        }
-
-        .mt-2 {
-            margin-top: 1rem;
-        }
-
-        .mt-3 {
-            margin-top: 1.5rem;
         }
     </style>
 </head>
 <body>
-
     <div id="loading">
         <div class="spinner"></div>
     </div>
-
 
     <header class="header">
         <div class="header-content">
@@ -647,11 +365,10 @@
                 خدماتك
             </div>
             <div class="auth-section">
-                <button id="themeToggleBtn" class="theme-toggle" title="تغيير المظهر">
+                <button id="themeToggleBtn" class="btn">
                     <i id="themeIcon" class="fas fa-moon"></i>
-                    <span id="themeLabel" style="display: none;">الوضع الليلي</span>
                 </button>
-                <div id="loggedInUser" class="user-info" style="display: none;">
+                <div id="loggedInUser" class="user-info">
                     <i class="fas fa-user"></i>
                     <span></span>
                 </div>
@@ -668,12 +385,11 @@
     </header>
 
     <div class="container">
-
         <div id="successAlert" class="alert alert-success"></div>
         <div id="errorAlert" class="alert alert-error"></div>
 
-
-        <div id="placeStatusBar" style="display: none;">
+        <!-- شريط حالة المكان -->
+        <div id="placeStatusBar">
             <div id="placeStatusMessage"></div>
             <div id="placeStatusButtons">
                 <button class="status-btn" data-status="مفتوح">مفتوح</button>
@@ -682,8 +398,8 @@
             </div>
         </div>
 
-
-        <div id="subscriptionStatusBar" style="display: none;">
+        <!-- شريط ملخص الاشتراك -->
+        <div id="subscriptionStatusBar">
             <div class="subscription-content">
                 <div>
                     <h4 id="subscriptionTitle"></h4>
@@ -693,28 +409,26 @@
             </div>
         </div>
 
-   
+        <!-- التبويبات -->
         <div class="tabs">
             <button class="tab active" id="tab-places" onclick="showTab('places')">
-                <i class="fas fa-store"></i>
-                بيانات المكان
+                <i class="fas fa-store"></i> بيانات المكان
             </button>
             <button class="tab" id="tab-ads" onclick="showTab('ads')" style="display: none;">
-                <i class="fas fa-bullhorn"></i>
-                الإعلانات
+                <i class="fas fa-bullhorn"></i> الإعلانات
             </button>
             <button class="tab" id="tab-packages" onclick="showTab('packages')">
-                <i class="fas fa-box"></i>
-                الباقات
+                <i class="fas fa-box"></i> الباقات
             </button>
         </div>
 
-        <div id="places-tab" class="tab-content">
+        <!-- تبويب الأماكن -->
+        <div id="places-tab" class="tab-content" style="display: block;">
             <h2>بيانات المكان أو الخدمة</h2>
             <form id="placeForm">
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="placeName">اسم المكان أو الخدمة *</label>
+                        <label for="placeName">اسم المكان *</label>
                         <input type="text" name="placeName" id="placeName" class="form-control" required>
                     </div>
                     <div class="form-group">
@@ -725,7 +439,7 @@
 
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="activityType">نوع النشاط / الفئة</label>
+                        <label for="activityType">نوع النشاط</label>
                         <select name="activityType" id="activityType" class="form-control">
                             <option value="">اختر نوع النشاط</option>
                         </select>
@@ -760,11 +474,7 @@
 
                 <div class="form-group">
                     <label for="mapLink">رابط الموقع على الخريطة</label>
-                    <input type="url" name="mapLink" id="mapLink" class="form-control" placeholder="https://maps.google.com/...">
-                    <button type="button" id="autoLocateBtn" class="btn auto-locate-btn">
-                        <i class="fas fa-location-arrow"></i>
-                        استخدم موقعي الحالي
-                    </button>
+                    <input type="url" name="mapLink" id="mapLink" class="form-control">
                 </div>
 
                 <div class="form-row">
@@ -774,7 +484,7 @@
                     </div>
                     <div class="form-group">
                         <label for="whatsappLink">رابط واتساب</label>
-                        <input type="url" name="whatsappLink" id="whatsappLink" class="form-control" placeholder="https://wa.me/...">
+                        <input type="url" name="whatsappLink" id="whatsappLink" class="form-control">
                     </div>
                 </div>
 
@@ -785,14 +495,14 @@
                     </div>
                     <div class="form-group">
                         <label for="website">الموقع الإلكتروني</label>
-                        <input type="url" name="website" id="website" class="form-control" placeholder="https://...">
+                        <input type="url" name="website" id="website" class="form-control">
                     </div>
                 </div>
 
                 <div class="form-row">
                     <div class="form-group">
                         <label for="workingHours">ساعات العمل</label>
-                        <input type="text" name="workingHours" id="workingHours" class="form-control" placeholder="9:00 ص - 10:00 م">
+                        <input type="text" name="workingHours" id="workingHours" class="form-control">
                     </div>
                     <div class="form-group">
                         <label for="delivery">خدمات التوصيل</label>
@@ -806,30 +516,28 @@
 
                 <div class="form-group">
                     <label for="description">وصف مختصر</label>
-                    <textarea name="description" id="description" class="form-control" rows="3" placeholder="اكتب وصفاً مختصراً عن المكان أو الخدمة..."></textarea>
+                    <textarea name="description" id="description" class="form-control" rows="3"></textarea>
                 </div>
 
                 <div class="form-group">
-                    <label for="placeImage">صورة شعار أو صورة المكان</label>
-                    <input type="file" name="placeImage" id="placeImage" class="form-control" accept="image/*" onchange="previewImage(this, 'placeImagePreview')">
+                    <label for="placeImage">صورة شعار المكان</label>
+                    <input type="file" name="placeImage" id="placeImage" class="form-control" accept="image/*">
                     <div id="placeImagePreview" class="preview"></div>
                 </div>
 
-                <div class="text-center">
+                <div style="text-align: center; margin-top: 2rem;">
                     <button type="submit" id="savePlaceBtn" class="btn btn-success">
-                        <i class="fas fa-save"></i>
-                        حفظ بيانات المكان
+                        <i class="fas fa-save"></i> حفظ بيانات المكان
                     </button>
                     <button type="button" id="goPackagesBtn" class="btn" style="margin-right: 10px;">
-                        <i class="fas fa-box"></i>
-                        انتقل إلى الباقات
+                        <i class="fas fa-box"></i> انتقل إلى الباقات
                     </button>
                 </div>
             </form>
         </div>
 
-   
-        <div id="ads-tab" class="tab-content" style="display: none;">
+        <!-- تبويب الإعلانات -->
+        <div id="ads-tab" class="tab-content">
             <h2>إدارة الإعلانات</h2>
             
             <div id="adQuotaSummary"></div>
@@ -862,13 +570,8 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="coupon">كوبون خصم (اختياري)</label>
-                    <input type="text" name="coupon" id="coupon" class="form-control" placeholder="كود الخصم">
-                </div>
-
-                <div class="form-group">
                     <label for="adDescription">وصف الإعلان</label>
-                    <textarea name="adDescription" id="adDescription" class="form-control" rows="4" placeholder="اكتب وصفاً تفصيلياً للإعلان..."></textarea>
+                    <textarea name="adDescription" id="adDescription" class="form-control" rows="4"></textarea>
                 </div>
 
                 <div class="form-row">
@@ -883,61 +586,58 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="adActiveStatus">حالة الإعلان</label>
-                    <select name="adActiveStatus" id="adActiveStatus" class="form-control">
-                        <option value="">اختر الحالة</option>
-                        <option value="نشط">نشط</option>
-                        <option value="غير نشط">غير نشط</option>
-                        <option value="مؤجل">مؤجل</option>
-                    </select>
+                    <label for="coupon">كوبون خصم (اختياري)</label>
+                    <input type="text" name="coupon" id="coupon" class="form-control">
                 </div>
 
                 <div class="form-group">
                     <label for="adImages">صور الإعلان (حتى 8 صور)</label>
-                    <input type="file" name="adImages" id="adImages" class="form-control" accept="image/*" multiple onchange="previewMultipleImages(this, 'adImagesPreview')">
+                    <input type="file" id="adImages" class="form-control" accept="image/*" multiple>
                     <div id="adImagesPreview" class="preview"></div>
                 </div>
 
                 <div class="form-group">
                     <label for="adVideo">فيديو الإعلان (اختياري)</label>
-                    <input type="file" name="adVideo" id="adVideo" class="form-control" accept="video/*" onchange="previewVideo(this, 'adVideoPreview')">
+                    <input type="file" id="adVideo" class="form-control" accept="video/*">
                     <div id="adVideoPreview" class="preview"></div>
                 </div>
 
-                <div class="text-center">
+                <div class="form-group">
+                    <label for="adActiveStatus">حالة الإعلان</label>
+                    <select name="adActiveStatus" id="adActiveStatus" class="form-control">
+                        <option value="">اختر الحالة</option>
+                        <option value="نشط">نشط</option>
+                        <option value="غير نشط">غير نشط</option>
+                    </select>
+                </div>
+
+                <div style="text-align: center;">
                     <button type="submit" class="btn btn-success">
-                        <i class="fas fa-save"></i>
-                        حفظ الإعلان
+                        <i class="fas fa-save"></i> حفظ الإعلان
                     </button>
                 </div>
             </form>
 
-            <hr class="mt-3 mb-3">
-
+            <hr style="margin: 2rem 0;">
+            
             <h3>إعلاناتك</h3>
             <div id="adsListContainer">
                 <p>لا توجد إعلانات حالياً.</p>
             </div>
         </div>
 
-   
-        <div id="packages-tab" class="tab-content" style="display: none;">
+        <!-- تبويب الباقات -->
+        <div id="packages-tab" class="tab-content">
             <h2>الباقات المتاحة</h2>
             <p>اختر الباقة المناسبة لاحتياجاتك:</p>
-            
-            <div id="packagesGrid" class="packages-grid">
-             
-            </div>
+            <div id="packagesGrid" class="packages-grid"></div>
         </div>
     </div>
 
-
+    <!-- نافذة تسجيل الدخول -->
     <div id="loginModal" class="modal">
         <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title">تسجيل الدخول</h3>
-                <button id="loginCancel" class="modal-close">&times;</button>
-            </div>
+            <h3>تسجيل الدخول</h3>
             <form id="loginForm">
                 <div class="form-group">
                     <label for="phoneOrId">رقم الهاتف أو ID المكان</label>
@@ -947,11 +647,9 @@
                     <label for="loginPassword">كلمة المرور</label>
                     <input type="password" name="password" id="loginPassword" class="form-control" required>
                 </div>
-                <div class="text-center">
-                    <button type="submit" class="btn btn-success">
-                        <i class="fas fa-sign-in-alt"></i>
-                        دخول
-                    </button>
+                <div style="text-align: center;">
+                    <button type="submit" class="btn btn-success">دخول</button>
+                    <button type="button" id="loginCancel" class="btn btn-secondary">إلغاء</button>
                 </div>
             </form>
         </div>
