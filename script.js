@@ -6329,809 +6329,1627 @@
 
 
 
-// ============ إعدادات عامة ====================
-const API_URL = 'https://script.google.com/macros/s/AKfycbwB0VE5COC0e6NQNKrxQeNRu2Mtt_QuMbVoBrH7tE6Da3X3BP6UxK926bt9fDO0WPU5/exec';
-let currentTab = 'places';
-let uploadedImages = [];
-let uploadedVideos = [];
-let editingAdId = null;
-const recentUploads = {};
-const THEME_KEY = 'khedmatak_theme';
+// // ============ إعدادات عامة ====================
+// const API_URL = 'https://script.google.com/macros/s/AKfycbwB0VE5COC0e6NQNKrxQeNRu2Mtt_QuMbVoBrH7tE6Da3X3BP6UxK926bt9fDO0WPU5/exec';
+// let currentTab = 'places';
+// let uploadedImages = [];
+// let uploadedVideos = [];
+// let editingAdId = null;
+// const recentUploads = {};
+// const THEME_KEY = 'khedmatak_theme';
 
-// ============ الثيم ====================
+// // ============ الثيم ====================
+// document.addEventListener('DOMContentLoaded', () => {
+//   initTheme();
+//   document.getElementById('themeToggleBtn')?.addEventListener('click', toggleTheme);
+//   setupAuthUI();
+//   setupEventListeners();
+//   loadLookupsAndPopulate();
+//   initMapFeatures();
+// });
+
+// function initTheme() {
+//   try {
+//     const saved = localStorage.getItem(THEME_KEY);
+//     if (saved) applyTheme(saved);
+//     else {
+//       const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+//       applyTheme(prefersDark ? 'dark' : 'light');
+//     }
+//   } catch {}
+// }
+// function applyTheme(theme) {
+//   document.body.classList.toggle('dark', theme === 'dark');
+//   const icon = document.getElementById('themeIcon');
+//   icon.classList.toggle('fas fa-sun', theme === 'light');
+//   icon.classList.toggle('fas fa-moon', theme === 'dark');
+// }
+// function toggleTheme() {
+//   const cur = document.body.classList.contains('dark') ? 'light' : 'dark';
+//   applyTheme(cur);
+// }
+
+// // ============ API ====================
+// async function apiFetch(url, opts = {}) {
+//   try {
+//     const res = await fetch(url, opts);
+//     const text = await res.text();
+//     let data; try { data = JSON.parse(text); } catch { data = text; }
+//     return { ok: res.ok, status: res.status, data, raw: text };
+// }
+// async function apiPost(payload) {
+//   try {
+//     let body; let headers = {};
+//     if (payload instanceof FormData) body = payload;
+//     else if (payload && typeof payload === 'object') {
+//       const form = new FormData();
+//       for (const k of Object.keys(payload)) {
+//         const v = payload[k];
+//         form.append(k, (v !== null && typeof v === 'object') ? JSON.stringify(v) : (v ?? ''));
+//       }
+//       body = form;
+//     } else {
+//       headers['Content-Type'] = 'text/plain';
+//       body = String(payload);
+//     }
+//     const res = await fetch(API_URL, { method: 'POST', body, headers });
+//     const text = await res.text();
+//     let data; try { data = JSON.parse(text); } catch { data = { success: false, error: 'Invalid JSON' }; }
+//     return { ok: res.ok, status: res.status, data, raw: text };
+// }
+
+// // ============ تحميل القوائم ====================
+// async function loadLookupsAndPopulate() {
+//   try {
+//     const resp = await apiFetch(`${API_URL}?action=getLookups`);
+//     if (!resp.ok) return;
+//     const data = resp.data;
+//     if (!data) return;
+
+//     window.lastLookups = data;
+//     populateSelect('#activityType', data.activities, 'اختر نوع النشاط');
+//     populateSelect('#city', data.cities, 'اختر المدينة');
+//     setupCityAreaMap(data.areas);
+//     populateSelect('#location', data.sites, 'اختر الموقع');
+
+//     window.availablePaymentMethods = (data.paymentsMethods || []).map(pm => ({
+//       id: pm.id || (pm.raw && pm.raw['معرف الدفع']),
+//       name: pm.name || (pm.raw && (pm.raw['طرق الدفع'] || pm.raw['طريقة الدفع'])),
+//       raw: pm.raw || pm
+//     }));
+
+//     const stored = getLoggedPlace();
+//     if (stored && stored.id) {
+//       await tryPrefillPlaceForm(stored);
+//       if (stored.id) {
+//         await checkAdQuotaAndToggle(stored.id);
+//         await loadAdsForPlace(stored.id);
+//       }
+//     }
+
+//     updateAdsTabVisibility();
+//   } catch (e) {
+//     console.error('loadLookupsAndPopulate_error', e);
+//   }
+// }
+// function populateSelect(selector, items, placeholder) {
+//   const sel = document.querySelector(selector);
+//   if (!sel) return;
+//   sel.innerHTML = `<option value="">${placeholder}</option>`;
+//   (items || []).forEach(it => {
+//     const opt = document.createElement('option');
+//     opt.value = it.id;
+//     opt.textContent = it.name;
+//     sel.appendChild(opt);
+//   });
+// }
+// function setupCityAreaMap(areas) {
+//   const map = {};
+//   (areas || []).forEach(a => {
+//     const cid = a.raw && (a.raw['ID المدينة'] || a.raw['cityId']);
+//     if (!map[cid]) map[cid] = [];
+//     map[cid].push({ id: a.id, name: a.name });
+//   });
+//   window.cityAreaMap = map;
+// }
+// function updateAreas() {
+//   const citySel = document.getElementById('city');
+//   const areaSel = document.getElementById('area');
+//   if (!citySel || !areaSel) return;
+//   areaSel.innerHTML = '<option value="">اختر المنطقة</option>';
+//   const selected = citySel.value;
+//   if (selected && window.cityAreaMap && window.cityAreaMap[selected]) {
+//     window.cityAreaMap[selected].forEach(a => {
+//       const opt = document.createElement('option');
+//       opt.value = a.id;
+//       opt.textContent = a.name;
+//       areaSel.appendChild(opt);
+//     });
+//   }
+// }
+
+// // ============ إعدادات الباقات ====================
+// function setupPackagesGrid(packages) {
+//   const grid = document.getElementById('packagesGrid');
+//   if (!grid) return;
+//   grid.innerHTML = '';
+//   const logged = getLoggedPlace();
+//   const currentPkgId = logged && logged.raw ? String(logged.raw['الباقة']) : '';
+//   const currentPkgStatus = logged && logged.raw ? String(logged.raw['حالة الباقة']).trim() : '';
+
+//   (packages || []).forEach(pkg => {
+//     const card = document.createElement('div');
+//     card.classList.add('pkg-card');
+//     card.textContent = `الباقة: ${pkg.name} • المدة: ${pkg.duration || ''} يوم • السعر: ${pkg.price || ''} • الإعلانات: ${pkg.allowedAds || ''}`;
+
+//     if (currentPkgId && String(pkg.id) === currentPkgId) {
+//       card.style.border = '2px solid #10b981';
+//       card.style.boxShadow = '0 6px 18px rgba(16,185,129,0.15)';
+//       const badge = document.createElement('div');
+//       badge.textContent = 'باقتك الحالية';
+//       badge.style.cssText = 'display: inline-block; background: #10b981; color: #fff; padding: 4px 8px; border-radius: 999px; margin-bottom: 8px; font-size: 12px; font-weight: 700;';
+//       card.appendChild(badge);
+//     }
+
+//     const btn = document.createElement('button');
+//     btn.classList.add('btn', 'choose-pkg');
+//     if (currentPkgId && currentPkgStatus === 'نشطة') btn.textContent = 'هذه باقتك';
+//     else if (currentPkgId && currentPkgStatus === 'قيد الدفع') btn.textContent = 'قيد الدفع';
+//     else if (currentPkgId && currentPkgStatus === 'منتهية') btn.textContent = 'إعادة التفعيل';
+//     else btn.textContent = 'اختر الباقة';
+
+//     btn.onclick = async () => {
+//       const logged = getLoggedPlace();
+//       if (!logged || !logged.id) {
+//         showError('احفظ بيانات المكان أولاً');
+//         return;
+//       }
+//       if (pkg.price === 0) {
+//         const blocked = await checkIfTrialIsUsed(logged.id);
+//         if (blocked) {
+//           showError('الباقة التجريبية غير متاحة مرة أخرى بعد انتهاء اشتراك سابق');
+//           return;
+//         }
+//       }
+//       await choosePackageAPI(pkg.id, { price: pkg.price });
+//     };
+
+//     card.appendChild(btn);
+//     grid.appendChild(card);
+//   });
+// }
+
+// async function checkIfTrialIsUsed(placeId) {
+//   try {
+//     const resp = await apiPost({ action: 'getDashboard', placeId });
+//     const data = resp.data ? resp.data.data : resp.data;
+//     const place = data && data.place ? data.place : null;
+//     if (!place || !place.raw) return false;
+//     const trialUsed = String(place.raw['حالة الباقة التجريبية']).toLowerCase() === 'true';
+//     return trialUsed;
+//   } catch { return false; }
+// }
+
+// // ============ إدارة الإعلانات ====================
+// async function loadAdsForPlace(placeId) {
+//   if (!placeId) return;
+//   try {
+//     const resp = await apiFetch(`${API_URL}?action=ads&placeId=${encodeURIComponent(placeId)}`);
+//     if (!resp.ok) return;
+//     const data = resp.data && resp.data.data ? resp.data.data : resp.data;
+//     const ads = data.ads || [];
+//     renderAdsList(ads);
+//   } catch {}
+// }
+// function renderAdsList(ads) {
+//   const container = document.getElementById('adsListContainer');
+//   container.innerHTML = ads && ads.length ? '' : 'لا توجد إعلانات حالياً لهذا المحل.';
+//   (ads || []).forEach(ad => {
+//     const card = document.createElement('div');
+//     card.classList.add('ad-card');
+//     card.innerHTML = `
+//       <h4>${ad.title || '(بدون عنوان)'}</h4>
+//       <div class="meta">${ad.startDate || ''} — ${ad.endDate || ''} • الحالة: ${ad.status || ''}</div>
+//       <p>${ad.description || ''}</p>
+//     `;
+//     if (ad.images && ad.images.length) {
+//       const imgs = document.createElement('div');
+//       imgs.classList.add('ad-images');
+//       ad.images.forEach(img => {
+//         const imgtag = document.createElement('img');
+//         imgtag.src = img.url || img;
+//         imgs.appendChild(imgtag);
+//         card.appendChild(imgs);
+//       });
+//     }
+//     const actions = document.createElement('div');
+//     actions.classList.add('ad-actions');
+
+//     const editBtn = document.createElement('button');
+//     editBtn.classList.add('btn');
+//     editBtn.textContent = 'تعديل';
+//     editBtn.onclick = () => startEditAd(ad);
+//     const delBtn = document.createElement('button');
+//     delBtn.classList.add('btn', 'btn-secondary');
+//     delBtn.textContent = 'حذف';
+//     delBtn.onclick = () => deleteAdConfirm(ad.id);
+//     actions.appendChild(editBtn);
+//     actions.appendChild(delBtn);
+//     card.appendChild(actions);
+//     container.appendChild(card);
+//   });
+// }
+
+// async function handleAdSubmit(ev) {
+//   ev.preventDefault();
+//   showLoading(true);
+//   try {
+//     const fd = new FormData(ev.target);
+//     const formData = {
+//       placeId: fd.get('placeId'), 
+//       adType: fd.get('adType'),
+//       adTitle: fd.get('adTitle'),
+//       coupon: fd.get('coupon'),
+//       adDescription: fd.get('adDescription'),
+//       startDate: fd.get('startDate'),
+//       endDate: fd.get('endDate'),
+//       adActiveStatus: fd.get('adActiveStatus'),
+//       images: [],
+//       video: null
+//     };
+
+//     if (!validateFiles()) {
+//       showLoading(false);
+//       return;
+//     }
+
+//     // تحميل الصور
+//     const fileInputs = document.getElementById('adImages');
+//     if (fileInputs && fileInputs.files) {
+//       const imageUrls = [];
+//       for (let i = 0; i < Math.min(fileInputs.files.length, 8); i++) {
+//         const file = fileInputs.files[i];
+//         const url = await uploadToGoogleDrive(file, 'ads');
+//         imageUrls.push({ name: file.name, url });
+//         recentUploads[file.name] = { url, name: file.name };
+//       }
+//       formData.images = imageUrls;
+//     }
+
+//     // تحميل الفيديو
+//     const videoInput = document.getElementById('adVideo');
+//     if (videoInput && videoInput.files) {
+//       const video = videoInput.files[0];
+//       const videoUrl = await uploadToGoogleDrive(video, 'ads');
+//       formData.video = videoUrl || '';
+//     }
+
+//     const logged = getLoggedPlace();
+//     const placeIdToSend = (formData.placeId && formData.placeId !== '') ? formData.placeId : (logged && logged.id ? logged.id : '');
+
+//     const payload = {
+//       action: editingAdId ? 'updateAd' : 'addAd',
+//       placeId: placeIdToSend,
+//       adType: formData.adType,
+//       adTitle: formData.adTitle,
+//       adDescription: formData.adDescription,
+//       startDate: formData.startDate,
+//       endDate: formData.endDate,
+//       coupon: formData.coupon,
+//       images: JSON.stringify(formData.images.map(i => i.name)),
+//       imageUrls: JSON.stringify(formData.images.map(i => i.url)),
+//       videoFile: formData.video ? formData.video.name : '',
+//       videoUrl: formData.video,
+//       adStatus: formData.adStatus
+//     };
+
+//     if (editingAdId) payload.adId = editingAdId;
+
+//     const resp = await apiPost(payload);
+//     if (!resp.ok || (resp.data && resp.data.success === false)) {
+//       showError((resp.data && resp.data.error) || 'فشل حفظ/تحديث الإعلان');
+//       return;
+//     }
+
+//     showSuccess(editingAdId ? 'تم تحديث الإعلان' : 'تم حفظ الإعلان');
+  
+//   const areaValue = areaOptions.find(Boolean);
+//   if (areaValue) {
+//     await setSelectValueWhenReady('select[name="area"]', areaValue);
+//   }
+// }
+
+// function parseLatLngFromMapLink(url) {
+//   if (!url || typeof url !== 'string') return null;
+  
+//   try {
+//     url = url.trim();
+    
+//     // نماذج مختلفة لروابط الخرائط
+//     const patterns = [
+//       /@(-?\d+\.\d+),\s*(-?\d+\.\d+)/,
+//       /!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/,
+//       /[?&]q=(-?\d+\.\d+),(-?\d+\.\d+)/,
+//       /[?&]ll=(-?\d+\.\d+),(-?\d+\.\d+)/,
+//       /[?&]mlat=(-?\d+\.\d+)&mlon=(-?\d+\.\d+)/,
+//       /#map=\d+\/(-?\d+\.\d+)\/(-?\d+\.\d+)/,
+//       /(-?\d+\.\d+)[, ]\s*(-?\d+\.\d+)/
+//     ];
+    
+//     for (const pattern of patterns) {
+//       const match = url.match(pattern);
+//       if (match) {
+//         const lat = parseFloat(match[1]);
+//         const lng = parseFloat(match[2]);
+        
+//         if (Math.abs(lat) <= 90 && Math.abs(lng) <= 180) {
+//           return { lat, lng };
+//         }
+//       }
+//     }
+//   } catch (e) {
+//     console.warn('parseLatLngFromMapLink error', e);
+//   }
+  
+//   return null;
+// }
+
+// /* ========================= نافذة الدفع ========================= */
+// function showPaymentModal({ paymentId, amount, currency, placeId }) {
+//   // إزالة النافذة السابقة إن وجدت
+//   const existing = document.getElementById('paymentModal');
+//   if (existing) existing.remove();
+
+//   const modal = document.createElement('div');
+//   modal.id = 'paymentModal';
+//   modal.style.cssText = `
+//     position: fixed;
+//     inset: 0;
+//     background: rgba(0,0,0,0.5);
+//     display: flex;
+//     align-items: center;
+//     justify-content: center;
+//     z-index: 9999;
+//   `;
+
+//   modal.innerHTML = `
+//     <div style="background:#fff;padding:18px;border-radius:10px;max-width:720px;width:95%;direction:rtl;color:#111">
+//       <h3 style="margin-top:0">معلومات الدفع</h3>
+//       ${paymentId ? `<p>معرف طلب الدفع: <strong>${escapeHtml(paymentId)}</strong></p>` : '<p>لا يوجد معرف طلب دفع متاح حالياً.</p>'}
+//       ${amount ? `<p>المبلغ المطلوب: <strong>${escapeHtml(String(amount))} ${escapeHtml(String(currency || 'SAR'))}</strong></p>` : ''}
+//       <h4>طرق الدفع المتاحة</h4>
+//       <div id="paymentMethods" style="margin-bottom:8px"></div>
+//       <label style="display:block;margin-top:8px">ارفق إيصال الدفع (صورة)</label>
+//       <input type="file" id="paymentReceipt" accept="image/*" style="display:block;margin:8px 0" />
+//       <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px">
+//         <button id="paymentCancel" class="btn btn-secondary">إلغاء</button>
+//         <button id="paymentSend" class="btn btn-primary">أرسل الإيصال</button>
+//       </div>
+//       <div id="paymentMessage" style="margin-top:10px;color:#333"></div>
+//     </div>
+//   `;
+
+//   document.body.appendChild(modal);
+
+//   // ملء طرق الدفع
+//   const methodsContainer = modal.querySelector('#paymentMethods');
+//   const methods = window.availablePaymentMethods || [];
+  
+//   if (methods && methods.length) {
+//     methods.forEach(method => {
+//       const div = document.createElement('div');
+//       div.style.cssText = 'padding:8px;border-radius:6px;border:1px solid #eee;margin-bottom:6px;background:#fafafa';
+      
+//       const name = method.name || (method.raw && (method.raw['طرق الدفع'] || method.raw['طريقة الدفع'])) || 'طريقة دفع';
+//       const details = (method.raw && (method.raw['معرف الدفع'] || method.id)) ? (method.raw['معرف الدفع'] || method.id) : '';
+      
+//       div.innerHTML = `
+//         <strong style="display:block">${escapeHtml(name)}</strong>
+//         ${details ? `<div style="color:#666;margin-top:4px">تفاصيل: ${escapeHtml(String(details))}</div>` : ''}
+//       `;
+//       methodsContainer.appendChild(div);
+//     });
+//   } else {
+//     methodsContainer.textContent = 'لا توجد طرق دفع معرفة. تواصل مع الإدارة.';
+//   }
+
+//   // ربط الأحداث
+//   const fileInput = modal.querySelector('#paymentReceipt');
+//   const cancelBtn = modal.querySelector('#paymentCancel');
+//   const sendBtn = modal.querySelector('#paymentSend');
+//   const messageDiv = modal.querySelector('#paymentMessage');
+
+//   cancelBtn.addEventListener('click', () => modal.remove());
+
+//   sendBtn.addEventListener('click', async () => {
+//     if (!fileInput.files || fileInput.files.length === 0) {
+//       messageDiv.textContent = 'الرجاء اختيار صورة الإيصال أولاً';
+//       return;
+//     }
+
+//     sendBtn.disabled = true;
+//     sendBtn.textContent = 'جاري الرفع...';
+//     messageDiv.textContent = '';
+
+//     try {
+//       const file = fileInput.files;
+//       const base64 = await readFileAsBase64(file);
+
+//       // رفع الملف
+//       const uploadResp = await apiPost({
+//         action: 'uploadMedia',
+//         fileName: file.name,
+//         mimeType: file.type,
+//         fileData: base64,
+//         placeId: placeId || ''
+//       });
+
+//       if (!uploadResp.ok) {
+//         throw new Error('فشل رفع الملف');
+//       }
+
+//       const uploadData = uploadResp.data.data || uploadResp.data;
+//       const fileUrl = (uploadData && (uploadData.fileUrl || uploadData.url)) || '';
+
+//       if (!fileUrl) {
+//         throw new Error('لم يتم الحصول على رابط الملف بعد الرفع');
+//       }
+
+//       // تحديث طلب الدفع
+//       if (paymentId) {
+//         const updateResp = await apiPost({
+//           action: 'updatePaymentRequest',
+//           paymentId: paymentId,
+//           updates: {
+//             'رابط إيصال الدفع': fileUrl,
+//             receiptUrl: fileUrl,
+//             الحالة: 'receipt_uploaded',
+//             ملاحظات: 'تم رفع إيصال من صاحب المحل'
+//           }
+//         });
+
+//         if (!updateResp.ok) {
+//           throw new Error('تم رفع الإيصال لكن فشل ربطه بطلب الدفع');
+//         }
+//       }
+
+//       messageDiv.textContent = 'تم إرسال الإيصال بنجاح. سيتم مراجعته والرد عليك قريباً.';
+//       setTimeout(() => modal.remove(), 2000);
+
+//     } catch (err) {
+//       messageDiv.textContent = 'حدث خطأ أثناء الإرسال: ' + (err.message || err);
+//       sendBtn.disabled = false;
+//       sendBtn.textContent = 'أرسل الإيصال';
+//     }
+//   });
+// }
+
+// /* ========================= شريط حالة المكان ========================= */
+// function showPlaceStatusBar(place) {
+//   const statusBar = document.getElementById('placeStatusBar');
+//   const statusMessage = document.getElementById('placeStatusMessage');
+  
+//   if (!statusBar) return;
+  
+//   if (!place || !place.id) {
+//     statusBar.style.display = 'none';
+//     if (statusMessage) statusMessage.textContent = '';
+//     return;
+//   }
+  
+//   statusBar.style.display = 'block';
+  
+//   const currentStatus = (place.status && String(place.status).trim() !== '') 
+//     ? place.status 
+//     : (place.raw && (place.raw['حالة المكان'] || place.raw['حالة التسجيل'])) 
+//       ? (place.raw['حالة المكان'] || place.raw['حالة التسجيل']) 
+//       : '';
+  
+//   const buttons = document.querySelectorAll('#placeStatusButtons .status-btn');
+//   buttons.forEach(button => {
+//     button.classList.toggle('active', button.dataset.status === currentStatus);
+//     button.disabled = false;
+//     button.textContent = button.dataset.status;
+//   });
+  
+//   if (statusMessage) {
+//     statusMessage.textContent = currentStatus ? `الحالة الحالية: ${currentStatus}` : 'الحالة غير محددة';
+//   }
+  
+//   initPlaceStatusButtons();
+// }
+
+// function hidePlaceStatusBar() {
+//   const statusBar = document.getElementById('placeStatusBar');
+//   const statusMessage = document.getElementById('placeStatusMessage');
+  
+//   if (statusBar) statusBar.style.display = 'none';
+//   if (statusMessage) statusMessage.textContent = '';
+// }
+
+// function initPlaceStatusButtons() {
+//   const container = document.getElementById('placeStatusButtons');
+//   if (!container) return;
+  
+//   // إعادة إنشاء مستمعي الأحداث
+//   container.querySelectorAll('.status-btn').forEach(button => {
+//     const clone = button.cloneNode(true);
+//     button.parentNode.replaceChild(clone, button);
+//   });
+  
+//   const buttons = document.querySelectorAll('#placeStatusButtons .status-btn');
+//   buttons.forEach(button => {
+//     button.addEventListener('click', async () => {
+//       const status = button.dataset.status;
+//       if (!status) return;
+//       await updatePlaceStatus(status, button);
+//     });
+//   });
+// }
+
+// async function updatePlaceStatus(newStatus, buttonElement = null) {
+//   let originalText = null;
+  
+//   try {
+//     const logged = getLoggedPlace();
+//     const placeId = (logged && logged.id) ? logged.id : null;
+    
+//     if (!placeId) {
+//       throw new Error('لا يوجد مكان مسجّل للدخول');
+//     }
+
+//     const currentStatus = (logged && logged.status) 
+//       ? logged.status 
+//       : (logged && logged.raw && (logged.raw['حالة المكان'] || logged.raw['حالة التسجيل'])) 
+//         ? (logged.raw['حالة المكان'] || logged.raw['حالة التسجيل']) 
+//         : '';
+
+//     // إذا كانت الحالة نفسها، لا حاجة للتحديث
+//     if (String(currentStatus) === String(newStatus)) {
+//       document.querySelectorAll('#placeStatusButtons .status-btn').forEach(button => {
+//         button.classList.toggle('active', button.dataset.status === newStatus);
+//       });
+      
+//       const statusMessage = document.getElementById('placeStatusMessage');
+//       if (statusMessage) statusMessage.textContent = `الحالة: ${newStatus}`;
+//       return;
+//     }
+
+//     // تعطيل كل الأزرار أثناء التحديث
+//     const buttons = document.querySelectorAll('#placeStatusButtons .status-btn');
+//     buttons.forEach(button => button.disabled = true);
+
+//     if (buttonElement) {
+//       originalText = buttonElement.textContent;
+//       buttonElement.textContent = 'جاري الحفظ...';
+//     }
+
+//     // إرسال التحديث للخادم
+//     const resp = await apiPost({
+//       action: 'updatePlace',
+//       placeId: placeId,
+//       status: newStatus
+//     });
+
+//     if (!resp.ok) {
+//       throw new Error('فشل في التواصل مع الخادم');
+//     }
+
+//     const data = resp.data;
+//     if (!data || data.success === false) {
+//       throw new Error((data && data.error) ? data.error : 'استجابة غير متوقعة');
+//     }
+
+//     // تحديث البيانات المحلية
+//     const stored = getLoggedPlace() || {};
+//     stored.status = newStatus;
+//     if (!stored.raw) stored.raw = {};
+//     stored.raw['حالة المكان'] = newStatus;
+//     stored.raw['حالة التسجيل'] = newStatus;
+//     setLoggedPlace(stored);
+
+//     // تحديث واجهة الأزرار
+//     buttons.forEach(button => {
+//       button.classList.toggle('active', button.dataset.status === newStatus);
+//       button.disabled = false;
+//       button.textContent = button.dataset.status;
+//     });
+
+//     if (buttonElement && originalText !== null) {
+//       buttonElement.textContent = buttonElement.dataset.status;
+//     }
+
+//     const statusMessage = document.getElementById('placeStatusMessage');
+//     if (statusMessage) {
+//       statusMessage.textContent = `تم التحديث إلى: ${newStatus}`;
+//     }
+
+//     showSuccess('تم تحديث حالة المكان بنجاح');
+
+//   } catch (err) {
+//     console.error('updatePlaceStatus error', err);
+//     showError(err.message || 'فشل تحديث حالة المكان');
+    
+//     // استعادة الأزرار
+//     document.querySelectorAll('#placeStatusButtons .status-btn').forEach(button => {
+//       button.disabled = false;
+//       button.textContent = button.dataset.status;
+//     });
+    
+//     if (buttonElement && originalText !== null) {
+//       buttonElement.textContent = originalText;
+//     }
+//   }
+// }
+
+// /* ========================= مساعدات متنوعة ========================= */
+// function showTab(tabName) {
+//   // إخفاء كل المحتويات
+//   document.querySelectorAll('.tab-content').forEach(content => {
+//     content.style.display = 'none';
+//   });
+  
+//   // إزالة الفئة النشطة من كل التبويبات
+//   document.querySelectorAll('.tab').forEach(tab => {
+//     tab.classList.remove('active');
+//   });
+  
+//   // عرض المحتوى المطلوب
+//   const targetContent = document.getElementById(tabName + '-tab');
+//   if (targetContent) {
+//     targetContent.style.display = 'block';
+//   }
+  
+//   // تفعيل التبويب
+//   const targetTab = document.getElementById('tab-' + tabName);
+//   if (targetTab) {
+//     targetTab.classList.add('active');
+//   }
+  
+//   currentTab = tabName;
+// }
+
+// function clearImagePreview() {
+//   const preview = document.getElementById('placeImagePreview');
+//   if (preview) preview.innerHTML = '';
+//   uploadedImages = [];
+// }
+
+// function clearAdForm(form) {
+//   form.reset();
+  
+//   const imagePreview = document.getElementById('adImagesPreview');
+//   const videoPreview = document.getElementById('adVideoPreview');
+  
+//   if (imagePreview) imagePreview.innerHTML = '';
+//   if (videoPreview) videoPreview.innerHTML = '';
+  
+//   uploadedImages = [];
+//   uploadedVideos = [];
+// }
+
+// function startEditAd(ad) {
+//   try {
+//     editingAdId = ad.id || null;
+//     const form = document.getElementById('adForm');
+//     if (!form) return;
+
+//     // ملء البيانات الأساسية
+//     const fieldMap = {
+//       'select[name="placeId"]': ad.placeId || '',
+//       'select[name="adType"]': ad.type || '',
+//       'input[name="adTitle"]': ad.title || '',
+//       'input[name="coupon"]': ad.coupon || '',
+//       'textarea[name="adDescription"]': ad.description || '',
+//       'input[name="startDate"]': ad.startDate || '',
+//       'input[name="endDate"]': ad.endDate || '',
+//       'select[name="adActiveStatus"]': ad.adActiveStatus || ad.status || '',
+//       'select[name="adStatus"]': ad.adStatus || ad.status || ''
+//     };
+
+//     for (const [selector, value] of Object.entries(fieldMap)) {
+//       const element = form.querySelector(selector);
+//       if (element) element.value = value;
+//     }
+
+//     // معاينة الصور
+//     const imagePreview = document.getElementById('adImagesPreview');
+//     if (imagePreview) {
+//       imagePreview.innerHTML = '';
+      
+//       if (ad.images && ad.images.length) {
+//         const imagesArray = Array.isArray(ad.images) ? ad.images : 
+//           (typeof ad.images === 'string' ? JSON.parse(ad.images) : []);
+        
+//         imagesArray.forEach(image => {
+//           const url = image && image.url ? image.url : (typeof image === 'string' ? image : '');
+//           const name = image && image.name ? image.name : (typeof image === 'string' ? image : '');
+          
+//           const container = document.createElement('div');
+//           container.className = 'preview-image';
+          
+//           if (url) {
+//             const img = document.createElement('img');
+//             img.src = url;
+//             img.style.cssText = 'width:100%;height:90px;object-fit:cover';
+//             container.appendChild(img);
+//           } else if (name && recentUploads[name]) {
+//             const img = document.createElement('img');
+//             img.src = recentUploads[name].url;
+//             img.style.cssText = 'width:100%;height:90px;object-fit:cover';
+//             container.appendChild(img);
+//           } else if (name) {
+//             const placeholder = document.createElement('div');
+//             placeholder.className = 'img-placeholder-file';
+//             placeholder.textContent = name;
+//             container.appendChild(placeholder);
+//           }
+          
+//           imagePreview.appendChild(container);
+//         });
+//       }
+//     }
+
+//     // معاينة الفيديو
+//     const videoPreview = document.getElementById('adVideoPreview');
+//     if (videoPreview) {
+//       videoPreview.innerHTML = '';
+      
+//       if (ad.videoUrl) {
+//         const video = document.createElement('video');
+//         video.src = ad.videoUrl;
+//         video.controls = true;
+//         video.style.width = '100%';
+//         videoPreview.appendChild(video);
+//       }
+//     }
+
+//     // تغيير نص الزر
+//     const submitBtn = document.querySelector('#adForm button[type="submit"]');
+//     if (submitBtn) submitBtn.textContent = 'تحديث الإعلان';
+    
+//     // الانتقال لتبويب الإعلانات
+//     showTab('ads');
+    
+//   } catch (e) {
+//     console.error('startEditAd failed', e);
+//   }
+// }
+
+// async function tryPrefillPlaceForm(place) {
+//   if (!place || !place.raw) return;
+  
+//   try {
+//     const raw = place.raw;
+    
+//     // دالة مساعدة لملء الحقول
+//     const setInput = (selector, value) => {
+//       const element = document.querySelector(selector);
+//       if (element && value !== undefined && value !== null) {
+//         element.value = value;
+//       }
+//     };
+
+//     // ملء البيانات الأساسية
+//     const name = raw['اسم المكان'] || place.name || '';
+//     setInput('input[name="placeName"]', name);
+//     setInput('input[name="password"]', raw['كلمة المرور'] || place.password || '');
+//     set
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* =========================
+   script.js
+   ضع هنا رابط Web App (ناتج نشر code.gs) في API_URL
+   ========================= */
+const API_URL = 'https://script.google.com/macros/s/AKfycbwB0VE5COC0e6NQNKrxQeNRu2Mtt_QuMbVoBrH7tE6Da3X3BP6UxK926bt9fDO0WPU5/exec'; // <-- غيّر هذا إلى رابط Web App
+
+// حالة التطبيق وذاكرة مؤقتة خفيفة
+let currentPlace = null;     // كائن المكان المسجل في localStorage
+let uploadedImages = [];     // ملفات صور للإعلانات (File objects)
+let uploadedVideo = null;    // ملف فيديو (File)
+let lastLookups = null;      // يحتوي على packages, cities, areas, activities,...
+
+/* ------------------------- DOM shortcuts ------------------------- */
+const $ = id => document.getElementById(id);
+const showLoading = (v) => { $('loading').style.display = v ? 'flex' : 'none'; };
+const showSuccess = (msg) => { const el=$('successAlert'); el.textContent=msg; el.style.display='block'; setTimeout(()=>el.style.display='none',4000); };
+const showError = (msg) => { const el=$('errorAlert'); el.textContent=msg; el.style.display='block'; setTimeout(()=>el.style.display='none',6000); };
+
+/* ------------------------- Initialization ------------------------- */
 document.addEventListener('DOMContentLoaded', () => {
+  bindUI();
   initTheme();
-  document.getElementById('themeToggleBtn')?.addEventListener('click', toggleTheme);
-  setupAuthUI();
-  setupEventListeners();
   loadLookupsAndPopulate();
-  initMapFeatures();
+  loadLocalPlace();
 });
 
-function initTheme() {
-  try {
-    const saved = localStorage.getItem(THEME_KEY);
-    if (saved) applyTheme(saved);
-    else {
-      const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-      applyTheme(prefersDark ? 'dark' : 'light');
-    }
-  } catch {}
-}
-function applyTheme(theme) {
-  document.body.classList.toggle('dark', theme === 'dark');
-  const icon = document.getElementById('themeIcon');
-  icon.classList.toggle('fas fa-sun', theme === 'light');
-  icon.classList.toggle('fas fa-moon', theme === 'dark');
-}
-function toggleTheme() {
-  const cur = document.body.classList.contains('dark') ? 'light' : 'dark';
-  applyTheme(cur);
-}
-
-// ============ API ====================
-async function apiFetch(url, opts = {}) {
-  try {
-    const res = await fetch(url, opts);
-    const text = await res.text();
-    let data; try { data = JSON.parse(text); } catch { data = text; }
-    return { ok: res.ok, status: res.status, data, raw: text };
-}
-async function apiPost(payload) {
-  try {
-    let body; let headers = {};
-    if (payload instanceof FormData) body = payload;
-    else if (payload && typeof payload === 'object') {
-      const form = new FormData();
-      for (const k of Object.keys(payload)) {
-        const v = payload[k];
-        form.append(k, (v !== null && typeof v === 'object') ? JSON.stringify(v) : (v ?? ''));
-      }
-      body = form;
-    } else {
-      headers['Content-Type'] = 'text/plain';
-      body = String(payload);
-    }
-    const res = await fetch(API_URL, { method: 'POST', body, headers });
-    const text = await res.text();
-    let data; try { data = JSON.parse(text); } catch { data = { success: false, error: 'Invalid JSON' }; }
-    return { ok: res.ok, status: res.status, data, raw: text };
-}
-
-// ============ تحميل القوائم ====================
-async function loadLookupsAndPopulate() {
-  try {
-    const resp = await apiFetch(`${API_URL}?action=getLookups`);
-    if (!resp.ok) return;
-    const data = resp.data;
-    if (!data) return;
-
-    window.lastLookups = data;
-    populateSelect('#activityType', data.activities, 'اختر نوع النشاط');
-    populateSelect('#city', data.cities, 'اختر المدينة');
-    setupCityAreaMap(data.areas);
-    populateSelect('#location', data.sites, 'اختر الموقع');
-
-    window.availablePaymentMethods = (data.paymentsMethods || []).map(pm => ({
-      id: pm.id || (pm.raw && pm.raw['معرف الدفع']),
-      name: pm.name || (pm.raw && (pm.raw['طرق الدفع'] || pm.raw['طريقة الدفع'])),
-      raw: pm.raw || pm
-    }));
-
-    const stored = getLoggedPlace();
-    if (stored && stored.id) {
-      await tryPrefillPlaceForm(stored);
-      if (stored.id) {
-        await checkAdQuotaAndToggle(stored.id);
-        await loadAdsForPlace(stored.id);
-      }
-    }
-
-    updateAdsTabVisibility();
-  } catch (e) {
-    console.error('loadLookupsAndPopulate_error', e);
-  }
-}
-function populateSelect(selector, items, placeholder) {
-  const sel = document.querySelector(selector);
-  if (!sel) return;
-  sel.innerHTML = `<option value="">${placeholder}</option>`;
-  (items || []).forEach(it => {
-    const opt = document.createElement('option');
-    opt.value = it.id;
-    opt.textContent = it.name;
-    sel.appendChild(opt);
-  });
-}
-function setupCityAreaMap(areas) {
-  const map = {};
-  (areas || []).forEach(a => {
-    const cid = a.raw && (a.raw['ID المدينة'] || a.raw['cityId']);
-    if (!map[cid]) map[cid] = [];
-    map[cid].push({ id: a.id, name: a.name });
-  });
-  window.cityAreaMap = map;
-}
-function updateAreas() {
-  const citySel = document.getElementById('city');
-  const areaSel = document.getElementById('area');
-  if (!citySel || !areaSel) return;
-  areaSel.innerHTML = '<option value="">اختر المنطقة</option>';
-  const selected = citySel.value;
-  if (selected && window.cityAreaMap && window.cityAreaMap[selected]) {
-    window.cityAreaMap[selected].forEach(a => {
-      const opt = document.createElement('option');
-      opt.value = a.id;
-      opt.textContent = a.name;
-      areaSel.appendChild(opt);
+/* ------------------------- UI Bindings ------------------------- */
+function bindUI() {
+  // tabs
+  window.showTab = (name) => {
+    ['places','ads','packages'].forEach(t => {
+      const btn = $('tab-btn-'+t);
+      const panel = $('tab-'+t);
+      if (btn) btn.classList.toggle('active', t===name);
+      if (panel) panel.classList.toggle('active', t===name);
     });
+  };
+
+  // place form
+  $('placeForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    await savePlace();
+  });
+  $('btn-to-packages').addEventListener('click', ()=> showTab('packages'));
+
+  // login UI
+  $('loginBtn').addEventListener('click', ()=> $('loginModal').style.display='flex');
+  $('loginCancel').addEventListener('click', ()=> $('loginModal').style.display='none');
+  $('loginForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    await handleLogin();
+  });
+  $('logoutBtn').addEventListener('click', () => { logoutLocal(); showSuccess('تم تسجيل الخروج'); });
+
+  // ad form
+  $('adForm').addEventListener('submit', async (e)=>{ e.preventDefault(); await saveAd(); });
+  $('adImages').addEventListener('change', (ev) => previewMultipleImages(ev.target.files, 'adImagesPreview'));
+  $('adVideo').addEventListener('change', (ev) => previewVideo(ev.target.files[0], 'adVideoPreview'));
+
+  // place image preview
+  $('placeImage').addEventListener('change', (ev) => previewSingleImage(ev.target.files[0], 'placeImagePreview'));
+
+  // status buttons
+  document.querySelectorAll('#placeStatusButtons .status-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const s = btn.dataset.status;
+      await updatePlaceStatus(s);
+    });
+  });
+
+  // packages grid click handler will be added during render
+}
+
+/* ------------------------- Theme ------------------------- */
+function initTheme(){
+  try {
+    const t = localStorage.getItem('khedmatak_theme') || 'light';
+    if (t==='dark') document.body.classList.add('dark');
+  } catch(e){}
+  const themeBtn = document.querySelector('#themeToggleBtn');
+  if (themeBtn) themeBtn.addEventListener('click', toggleTheme);
+}
+function toggleTheme(){
+  document.body.classList.toggle('dark');
+  try{ localStorage.setItem('khedmatak_theme', document.body.classList.contains('dark') ? 'dark' : 'light'); }catch{}
+}
+
+/* ========================= API helpers ========================= */
+async function apiGet(action, params = {}) {
+  try {
+    const url = new URL(API_URL);
+    url.searchParams.set('action', action);
+    Object.keys(params).forEach(k => url.searchParams.set(k, params[k]));
+    const res = await fetch(url.toString());
+    const text = await res.text();
+    try { return JSON.parse(text); } catch { return text; }
+  } catch (e) { throw e; }
+}
+
+async function apiPostForm(formData) {
+  try {
+    const res = await fetch(API_URL, { method: 'POST', body: formData });
+    const text = await res.text();
+    try { return JSON.parse(text); } catch { return text; }
+  } catch (e) { throw e; }
+}
+
+/* read file to base64 (no data: prefix) */
+function fileToBase64(file){
+  return new Promise((resolve,reject)=>{
+    const fr = new FileReader();
+    fr.onload = ()=> {
+      const s = fr.result || '';
+      const idx = s.indexOf(',');
+      resolve(idx>=0 ? s.substring(idx+1) : s);
+    };
+    fr.onerror = reject;
+    fr.readAsDataURL(file);
+  });
+}
+
+/* ========================= Lookups & initial populate ========================= */
+async function loadLookupsAndPopulate(){
+  try{
+    showLoading(true);
+    const resp = await apiGet('getLookups');
+    const data = (resp && resp.success && resp.data) ? resp.data : resp;
+    lastLookups = data;
+    populateSelect('activityType', data.activities || []);
+    populateSelect('city', data.cities || []);
+    populateSelect('location', data.sites || []);
+    renderPackagesGrid(data.packages || []);
+    populatePlacesSelects();
+    // areas depend on city; build map
+    buildCityAreaMap(data.areas || []);
+    // try prefill if logged
+    if (currentPlace) prefillPlaceForm(currentPlace);
+  }catch(err){
+    console.error(err);
+    showError('تعذر جلب بيانات التعريف (lookups)');
+  }finally{ showLoading(false); }
+}
+
+function populateSelect(id, items){
+  const sel = $(id);
+  if (!sel) return;
+  sel.innerHTML = '<option value="">اختر</option>';
+  items.forEach(it=>{
+    const o = document.createElement('option');
+    o.value = it.id || it.raw && (it.raw['ID'] || it.raw['ID الباقة']) || '';
+    o.textContent = it.name || (it.raw && (it.raw['اسم المدينة'] || it.raw['اسم الباقة'])) || o.value;
+    sel.appendChild(o);
+  });
+}
+
+/* ----------------- cities -> areas map ----------------- */
+let cityAreaMap = {};
+function buildCityAreaMap(areas){
+  cityAreaMap = {};
+  (areas || []).forEach(a=>{
+    const cid = (a.raw && (a.raw['ID المدينة'] || a.raw.cityId)) || a.id || '';
+    if (!cityAreaMap[cid]) cityAreaMap[cid] = [];
+    cityAreaMap[cid].push(a);
+  });
+}
+function updateAreas(){
+  const city = $('city').value;
+  const areaSel = $('area');
+  areaSel.innerHTML = '<option value="">اختر</option>';
+  if (city && cityAreaMap[city]) cityAreaMap[city].forEach(a=>{
+    const o = document.createElement('option'); o.value = a.id; o.textContent = a.name; areaSel.appendChild(o);
+  });
+}
+
+/* ========================= Places (register/update/login) ========================= */
+async function savePlace(){
+  try{
+    showLoading(true);
+    const form = $('placeForm');
+    const formData = new FormData();
+    const logged = loadLocalPlaceFromStorage();
+    const isUpdate = !!(logged && logged.id);
+
+    // gather values
+    const payload = {
+      name: form.placeName.value || '',
+      password: form.password.value || '',
+      activityId: form.activityType.value || '',
+      cityId: form.city.value || '',
+      areaId: form.area.value || '',
+      siteId: form.location.value || '',
+      address: form.detailedAddress.value || '',
+      mapLink: form.mapLink ? form.mapLink.value : '',
+      phone: form.phone.value || '',
+      whatsapp: form.whatsappLink.value || '',
+      email: form.email.value || '',
+      website: form.website.value || '',
+      hours: form.workingHours.value || '',
+      delivery: form.delivery.value || '',
+      description: form.description.value || ''
+    };
+
+    // if image chosen, upload first
+    const imageFile = $('placeImage').files && $('placeImage').files[0];
+    if (imageFile){
+      const uploaded = await uploadFileToServer(imageFile, logged && logged.id ? logged.id : '');
+      if (uploaded && (uploaded.fileUrl || uploaded.url)) {
+        payload.logoUrl = uploaded.fileUrl || uploaded.url;
+        payload.imgbbLogoUrl = uploaded.imgbbUrl || '';
+      }
+    }
+
+    const post = new FormData();
+    post.append('action', isUpdate ? 'updatePlace' : 'registerPlace');
+    // if updating attach placeId
+    if (isUpdate) post.append('placeId', String(logged.id));
+    // append payload fields
+    Object.keys(payload).forEach(k => {
+      if (payload[k] !== undefined && payload[k] !== null) post.append(k, payload[k]);
+    });
+
+    const resp = await apiPostForm(post);
+    const ok = resp && (resp.success === true || (resp.data && resp.data.message));
+    if (!ok) {
+      const err = resp && (resp.error || (resp.data && resp.data.error)) || 'فشل الحفظ';
+      throw new Error(err);
+    }
+
+    // if register: resp.data.id may contain new id
+    let newPlace = null;
+    if (resp.data && resp.data.place) newPlace = resp.data.place;
+    else if (resp.data && resp.data.id) {
+      // fetch dashboard to get full place
+      const dash = await apiPostForm(Object.assign(new FormData(), Object.entries([['action','getDashboard'],['placeId',String(resp.data.id)]]).reduce((fd,[k,v])=>{fd.append(k,v);return fd}, new FormData())));
+      // try to extract
+      if (dash && dash.data && dash.data.place) newPlace = dash.data.place;
+    }
+
+    if (!newPlace) {
+      // best-effort: build minimal object
+      const built = { id: (resp.data && resp.data.id) || (logged && logged.id) || '', raw: {} };
+      Object.keys(payload).forEach(k => {
+        // map some keys to Arabic header fields
+        if (k==='name') built.raw['اسم المكان'] = payload[k];
+        if (k==='phone') built.raw['رقم التواصل'] = payload[k];
+        if (k==='logoUrl') built.raw['صورة شعار أو صورة المكان'] = payload[k];
+      });
+      newPlace = built;
+    }
+
+    saveLocalPlace(newPlace);
+    setUIAfterLogin(newPlace);
+    showSuccess('تم حفظ بيانات المكان بنجاح');
+    // refresh lookups & packages bar
+    await refreshSubscriptionBar();
+    await populatePlacesSelects();
+    if (newPlace.id) await checkAdQuotaAndToggle(newPlace.id);
+  }catch(err){
+    console.error(err);
+    showError(err.message || err || 'خطأ أثناء حفظ المكان');
+  }finally{ showLoading(false); }
+}
+
+async function handleLogin(){
+  try{
+    showLoading(true);
+    const phoneOrId = $('phoneOrId').value.trim();
+    const password = $('loginPassword').value || '';
+    if (!phoneOrId || !password) { showError('أدخل رقم/ID وكلمة المرور'); return; }
+
+    const post = new FormData();
+    post.append('action','loginPlace');
+    post.append('phoneOrId', phoneOrId);
+    post.append('password', password);
+
+    const resp = await apiPostForm(post);
+    if (!resp || resp.success === false) {
+      const err = resp && (resp.error || (resp.data && resp.data.error)) || 'فشل تسجيل الدخول';
+      throw new Error(err);
+    }
+    const place = (resp.data && resp.data.place) ? resp.data.place : (resp.data || resp);
+    if (!place) throw new Error('تعذر استلام بيانات المكان من الخادم');
+
+    saveLocalPlace(place);
+    setUIAfterLogin(place);
+    $('loginModal').style.display = 'none';
+    showSuccess('تم تسجيل الدخول');
+    await populatePlacesSelects();
+    await refreshSubscriptionBar();
+  }catch(err){
+    console.error(err);
+    showError(err.message || 'خطأ أثناء تسجيل الدخول');
+  }finally{ showLoading(false); }
+}
+
+function saveLocalPlace(placeObj){
+  try{ localStorage.setItem('khedmatak_place', JSON.stringify(placeObj)); currentPlace = placeObj; }catch(e){}
+}
+function loadLocalPlaceFromStorage(){
+  try{ const raw = localStorage.getItem('khedmatak_place'); return raw ? JSON.parse(raw) : null; }catch(e){return null;}
+}
+function loadLocalPlace(){ currentPlace = loadLocalPlaceFromStorage(); if (currentPlace) setUIAfterLogin(currentPlace); else setUILoggedOut(); }
+
+/* ------------------ UI After login/out ------------------ */
+function setUIAfterLogin(place){
+  currentPlace = place;
+  try{ $('placeNameBanner').style.display = 'inline-block'; $('placeNameBanner').textContent = place.name || (place.raw && place.raw['اسم المكان']) || ('مكان #' + (place.id||'')); }catch(e){}
+  $('loginBtn').style.display = 'none';
+  $('logoutBtn').style.display = 'inline-block';
+  $('tab-btn-ads').style.display = 'inline-block';
+  prefillPlaceForm(place);
+  showPlaceStatusBar(place);
+}
+function setUILoggedOut(){
+  $('placeNameBanner').style.display = 'none';
+  $('loginBtn').style.display = 'inline-block';
+  $('logoutBtn').style.display = 'none';
+  $('tab-btn-ads').style.display = 'none';
+  hidePlaceStatusBar();
+  $('subscriptionStatusBar').style.display = 'none';
+}
+
+/* ------------------ logout ------------------ */
+function logoutLocal(){
+  localStorage.removeItem('khedmatak_place');
+  currentPlace = null;
+  setUILoggedOut();
+}
+
+/* ------------------ Pre-fill place form ------------------ */
+function prefillPlaceForm(place){
+  if (!place || !place.raw) return;
+  const raw = place.raw;
+  $('placeName').value = raw['اسم المكان'] || place.name || '';
+  if (raw['رقم التواصل']) $('phone').value = raw['رقم التواصل'];
+  if (raw['البريد الإلكتروني']) $('email').value = raw['البريد الإلكتروني'];
+  if (raw['الموقع الالكتروني']) $('website').value = raw['الموقع الالكتروني'];
+  if (raw['العنوان التفصيلي']) $('detailedAddress').value = raw['العنوان التفصيلي'];
+  setSelectValueByText($('activityType'), raw['نوع النشاط / الفئة'] || raw['نوع النشاط'] || '');
+  setSelectValueByText($('city'), raw['المدينة'] || '');
+  updateAreas();
+  setSelectValueByText($('area'), raw['المنطقة'] || '');
+  setSelectValueByText($('location'), raw['الموقع او المول'] || '');
+  if (raw['صورة شعار أو صورة المكان'] || raw['رابط صورة شعار المكان']){
+    const url = raw['رابط صورة شعار المكان'] || raw['صورة شعار أو صورة المكان'];
+    const p = $('placeImagePreview'); p.innerHTML = ''; const img = document.createElement('img'); img.src = url; p.appendChild(img);
   }
 }
 
-// ============ إعدادات الباقات ====================
-function setupPackagesGrid(packages) {
-  const grid = document.getElementById('packagesGrid');
-  if (!grid) return;
+/* helper set select by visible text/value */
+function setSelectValueByText(sel, text){
+  if (!sel || !text) return;
+  for (const o of Array.from(sel.options)){
+    if (o.value === text || (o.text && o.text.trim() === text) || (o.text && o.text.includes(text))) { sel.value = o.value; break; }
+  }
+}
+
+/* ========================= Packages ========================= */
+function renderPackagesGrid(pkgs){
+  const grid = $('packagesGrid'); if (!grid) return;
   grid.innerHTML = '';
-  const logged = getLoggedPlace();
-  const currentPkgId = logged && logged.raw ? String(logged.raw['الباقة']) : '';
-  const currentPkgStatus = logged && logged.raw ? String(logged.raw['حالة الباقة']).trim() : '';
+  (pkgs || []).forEach(p=>{
+    const duration = Number(p.duration || (p.raw && (p.raw['مدة الباقة باليوم']||p.raw['مدة'])) || 0);
+    const price = Number(p.price || (p.raw && (p.raw['سعر الباقة']||p.raw['السعر'])) || 0);
+    const allowed = Number(p.allowedAds || (p.raw && (p.raw['عدد الاعلانات']||p.raw['عدد_الاعلانات'])) || 0);
 
-  (packages || []).forEach(pkg => {
-    const card = document.createElement('div');
-    card.classList.add('pkg-card');
-    card.textContent = `الباقة: ${pkg.name} • المدة: ${pkg.duration || ''} يوم • السعر: ${pkg.price || ''} • الإعلانات: ${pkg.allowedAds || ''}`;
-
-    if (currentPkgId && String(pkg.id) === currentPkgId) {
-      card.style.border = '2px solid #10b981';
-      card.style.boxShadow = '0 6px 18px rgba(16,185,129,0.15)';
-      const badge = document.createElement('div');
-      badge.textContent = 'باقتك الحالية';
-      badge.style.cssText = 'display: inline-block; background: #10b981; color: #fff; padding: 4px 8px; border-radius: 999px; margin-bottom: 8px; font-size: 12px; font-weight: 700;';
-      card.appendChild(badge);
-    }
-
-    const btn = document.createElement('button');
-    btn.classList.add('btn', 'choose-pkg');
-    if (currentPkgId && currentPkgStatus === 'نشطة') btn.textContent = 'هذه باقتك';
-    else if (currentPkgId && currentPkgStatus === 'قيد الدفع') btn.textContent = 'قيد الدفع';
-    else if (currentPkgId && currentPkgStatus === 'منتهية') btn.textContent = 'إعادة التفعيل';
-    else btn.textContent = 'اختر الباقة';
-
-    btn.onclick = async () => {
-      const logged = getLoggedPlace();
-      if (!logged || !logged.id) {
-        showError('احفظ بيانات المكان أولاً');
-        return;
-      }
-      if (pkg.price === 0) {
-        const blocked = await checkIfTrialIsUsed(logged.id);
-        if (blocked) {
-          showError('الباقة التجريبية غير متاحة مرة أخرى بعد انتهاء اشتراك سابق');
-          return;
-        }
-      }
-      await choosePackageAPI(pkg.id, { price: pkg.price });
-    };
-
-    card.appendChild(btn);
-    grid.appendChild(card);
+    const div = document.createElement('div'); div.className='pkg';
+    div.innerHTML = `<div style="font-weight:700;margin-bottom:8px">${escapeHtml(p.name||'باقة')}</div>
+      <div class="small">المدة: ${duration} يوم • السعر: ${price} • الاعلانات: ${allowed}</div>
+      <div style="margin-top:10px">${p.raw && (p.raw['وصف الباقة']||p.raw['description']||'')}</div>`;
+    const btn = document.createElement('button'); btn.className='btn'; btn.style.marginTop='12px';
+    btn.textContent = price===0 ? 'تفعيل فوري' : 'اختيار باقة';
+    btn.addEventListener('click', ()=> choosePackage(p.id, price));
+    div.appendChild(btn);
+    grid.appendChild(div);
   });
 }
 
-async function checkIfTrialIsUsed(placeId) {
-  try {
-    const resp = await apiPost({ action: 'getDashboard', placeId });
-    const data = resp.data ? resp.data.data : resp.data;
-    const place = data && data.place ? data.place : null;
-    if (!place || !place.raw) return false;
-    const trialUsed = String(place.raw['حالة الباقة التجريبية']).toLowerCase() === 'true';
-    return trialUsed;
-  } catch { return false; }
+async function choosePackage(packageId, price){
+  if (!currentPlace || !currentPlace.id) { showError('سجل الدخول أو احفظ المكان أولاً'); return; }
+  try{
+    showLoading(true);
+    const fd = new FormData();
+    fd.append('action','choosePackage');
+    fd.append('placeId', String(currentPlace.id));
+    fd.append('packageId', String(packageId));
+    const resp = await apiPostForm(fd);
+    if (!resp || (resp.success===false)) throw new Error(resp && (resp.error || (resp.data && resp.data.error)) || 'خطأ');
+    const result = resp.data || resp;
+    // code.gs returns { success:true, pending:true/false, paymentId, ... } or { success:true, pending:false, start,end,... }
+    if (result.pending) {
+      showSuccess('تم إنشاء طلب دفع. ارفق إيصال الدفع من لوحة الإدارة.');
+      // update local copy
+      if (!currentPlace.raw) currentPlace.raw = {};
+      currentPlace.raw['الباقة'] = String(packageId);
+      currentPlace.raw['حالة الباقة'] = 'قيد الدفع';
+      saveLocalPlace(currentPlace);
+      await refreshSubscriptionBar();
+    } else {
+      showSuccess('تم تفعيل الباقة بنجاح');
+      if (!currentPlace.raw) currentPlace.raw = {};
+      currentPlace.raw['الباقة'] = String(packageId);
+      currentPlace.raw['حالة الباقة'] = 'نشطة';
+      currentPlace.raw['تاريخ بداية الاشتراك'] = result.start || currentPlace.raw['تاريخ بداية الاشتراك'];
+      currentPlace.raw['تاريخ نهاية الاشتراك'] = result.end || currentPlace.raw['تاريخ نهاية الاشتراك'];
+      saveLocalPlace(currentPlace);
+      await refreshSubscriptionBar();
+    }
+  }catch(err){
+    console.error(err); showError(err.message || 'خطأ أثناء اختيار الباقة');
+  }finally{ showLoading(false); }
 }
 
-// ============ إدارة الإعلانات ====================
-async function loadAdsForPlace(placeId) {
+/* ========================= Upload helper ========================= */
+async function uploadFileToServer(file, placeId=''){
+  // converts file to base64 and calls action 'uploadMedia' (code.gs supports it)
+  try{
+    const base64 = await fileToBase64(file);
+    const fd = new FormData();
+    fd.append('action','uploadMedia');
+    fd.append('placeId', placeId || '');
+    fd.append('fileName', file.name);
+    fd.append('mimeType', file.type || 'application/octet-stream');
+    fd.append('fileData', base64);
+    // optional: imgbb flag if you want to attempt imgBB: fd.append('imgbb','true')
+    const resp = await apiPostForm(fd);
+    // resp may be { success:true, data: { fileUrl, fileId, imgbbUrl, ... } }
+    if (resp && resp.success && resp.data) return resp.data;
+    return resp;
+  }catch(err){ console.error(err); throw err; }
+}
+
+/* ========================= Ads (add / list / update / delete) ========================= */
+async function populatePlacesSelects(){
+  // use GET action places -> code.gs has 'places' in GET (returns success:true,data:{places: [...]}) in some branches
+  try{
+    const resp = await apiGet('places');
+    let list = [];
+    if (resp && resp.success && resp.data && Array.isArray(resp.data.places)) list = resp.data.places;
+    else if (Array.isArray(resp)) list = resp;
+    else if (resp && Array.isArray(resp.places)) list = resp.places;
+
+    // fill both adPlaces and place selection
+    const selAd = $('adPlaceId'); selAd.innerHTML = '<option value="">اختر</option>';
+    list.forEach(p=>{
+      const opt = document.createElement('option'); opt.value = p.id; opt.textContent = p.name || (p.raw&&p.raw['اسم المكان']) || p.id;
+      selAd.appendChild(opt);
+    });
+
+    // if logged in place: select & lock
+    if (currentPlace && currentPlace.id) {
+      if ($('adPlaceId')) { $('adPlaceId').value = currentPlace.id; $('adPlaceId').disabled = true; }
+      // also show ads tab
+      $('tab-btn-ads').style.display = 'inline-block';
+      await checkAdQuotaAndToggle(currentPlace.id);
+      await loadAdsForPlace(currentPlace.id);
+    } else {
+      $('tab-btn-ads').style.display = 'none';
+    }
+  }catch(e){ console.error(e); }
+}
+
+async function loadAdsForPlace(placeId){
   if (!placeId) return;
-  try {
-    const resp = await apiFetch(`${API_URL}?action=ads&placeId=${encodeURIComponent(placeId)}`);
-    if (!resp.ok) return;
-    const data = resp.data && resp.data.data ? resp.data.data : resp.data;
-    const ads = data.ads || [];
+  try{
+    const resp = await apiGet('ads',{placeId});
+    let ads = [];
+    if (resp && resp.success && resp.data && resp.data.ads) ads = resp.data.ads;
+    else if (resp && resp.ads) ads = resp.ads;
+    else if (Array.isArray(resp)) ads = resp;
     renderAdsList(ads);
-  } catch {}
+  }catch(e){ console.error(e); showError('تعذر جلب الإعلانات'); }
 }
-function renderAdsList(ads) {
-  const container = document.getElementById('adsListContainer');
-  container.innerHTML = ads && ads.length ? '' : 'لا توجد إعلانات حالياً لهذا المحل.';
-  (ads || []).forEach(ad => {
-    const card = document.createElement('div');
-    card.classList.add('ad-card');
-    card.innerHTML = `
-      <h4>${ad.title || '(بدون عنوان)'}</h4>
-      <div class="meta">${ad.startDate || ''} — ${ad.endDate || ''} • الحالة: ${ad.status || ''}</div>
-      <p>${ad.description || ''}</p>
-    `;
-    if (ad.images && ad.images.length) {
-      const imgs = document.createElement('div');
-      imgs.classList.add('ad-images');
-      ad.images.forEach(img => {
-        const imgtag = document.createElement('img');
-        imgtag.src = img.url || img;
-        imgs.appendChild(imgtag);
-        card.appendChild(imgs);
-      });
-    }
-    const actions = document.createElement('div');
-    actions.classList.add('ad-actions');
 
-    const editBtn = document.createElement('button');
-    editBtn.classList.add('btn');
-    editBtn.textContent = 'تعديل';
-    editBtn.onclick = () => startEditAd(ad);
-    const delBtn = document.createElement('button');
-    delBtn.classList.add('btn', 'btn-secondary');
-    delBtn.textContent = 'حذف';
-    delBtn.onclick = () => deleteAdConfirm(ad.id);
-    actions.appendChild(editBtn);
-    actions.appendChild(delBtn);
-    card.appendChild(actions);
-    container.appendChild(card);
+function renderAdsList(ads){
+  const container = $('adsListContainer'); container.innerHTML = '';
+  if (!ads || !ads.length){ container.textContent = 'لا توجد إعلانات حالياً.'; return; }
+  ads.forEach(ad=>{
+    const div = document.createElement('div'); div.className='ad-item';
+    const title = document.createElement('div'); title.style.fontWeight='700'; title.textContent = ad.title || ad.AdTitle || '(بدون عنوان)';
+    const meta = document.createElement('div'); meta.className='small'; meta.textContent = `${ad.startDate||ad['تاريخ البداية']||''} — ${ad.endDate||ad['تاريخ النهاية']||''} • ${ad.status||ad['حالة الاعلان']||''}`;
+    const desc = document.createElement('div'); desc.textContent = ad.description || ad['الوصف'] || '';
+    div.appendChild(title); div.appendChild(meta); div.appendChild(desc);
+
+    if (ad.images && ad.images.length){
+      const imgs = document.createElement('div'); imgs.style.display='flex'; imgs.style.gap='8px'; imgs.style.marginTop='8px';
+      const arr = Array.isArray(ad.images) ? ad.images : (ad.images && typeof ad.images === 'string' ? JSON.parse(ad.images) : []);
+      arr.forEach(img=>{
+        let url = '';
+        if (typeof img === 'string') url = img;
+        else if (img && img.url) url = img.url;
+        if (url){
+          const iel = document.createElement('img'); iel.src = url; iel.style.width='80px'; iel.style.height='80px'; iel.style.objectFit='cover'; iel.style.borderRadius='6px';
+          imgs.appendChild(iel);
+        }
+      });
+      div.appendChild(imgs);
+    }
+
+    const actions = document.createElement('div'); actions.style.marginTop='10px';
+    const editBtn = document.createElement('button'); editBtn.className='btn'; editBtn.style.marginRight='8px'; editBtn.textContent='تعديل';
+    editBtn.addEventListener('click', ()=> startEditAd(ad));
+    const delBtn = document.createElement('button'); delBtn.className='btn secondary'; delBtn.textContent='حذف';
+    delBtn.addEventListener('click', ()=> deleteAdConfirm(ad.id || ad['ID الإعلان'] || ad.ID));
+    actions.appendChild(editBtn); actions.appendChild(delBtn);
+    div.appendChild(actions);
+    container.appendChild(div);
   });
 }
 
-async function handleAdSubmit(ev) {
-  ev.preventDefault();
-  showLoading(true);
-  try {
-    const fd = new FormData(ev.target);
-    const formData = {
-      placeId: fd.get('placeId'), 
-      adType: fd.get('adType'),
-      adTitle: fd.get('adTitle'),
-      coupon: fd.get('coupon'),
-      adDescription: fd.get('adDescription'),
-      startDate: fd.get('startDate'),
-      endDate: fd.get('endDate'),
-      adActiveStatus: fd.get('adActiveStatus'),
-      images: [],
-      video: null
-    };
+function startEditAd(ad){
+  // fill ad form for editing
+  editingAdId = ad.id || ad['ID الإعلان'] || ad.ID;
+  $('adTitle').value = ad.title || ad['العنوان'] || '';
+  $('adDescription').value = ad.description || ad['الوصف'] || '';
+  $('startDate').value = ad.startDate || ad['تاريخ البداية'] || '';
+  $('endDate').value = ad.endDate || ad['تاريخ النهاية'] || '';
+  $('coupon').value = ad.coupon || ad['كوبون خصم'] || '';
+  $('adType').value = ad.type || ad['نوع الاعلان'] || '';
+  $('adActiveStatus').value = ad.status || ad['حالة الاعلان'] || '';
+  if ($('adPlaceId')) { $('adPlaceId').value = ad.placeId || ad['ID المكان'] || ''; $('adPlaceId').disabled = true; }
+  // previews
+  if (ad.images && ad.images.length){ const pres = $('adImagesPreview'); pres.innerHTML=''; (ad.images||[]).forEach(u=>{
+    const img = document.createElement('img'); img.src = (typeof u==='string' ? u : u.url || ''); pres.appendChild(img);
+  }); }
+  if (ad.video){ const vpre=$('adVideoPreview'); vpre.innerHTML=''; const video = document.createElement('video'); video.src = ad.video; video.controls=true; video.style.width='100%'; vpre.appendChild(video); }
+  showTab('ads');
+}
 
-    if (!validateFiles()) {
-      showLoading(false);
-      return;
+async function saveAd(){
+  try{
+    showLoading(true);
+    const form = $('adForm');
+    const placeId = form.placeId.value || (currentPlace && currentPlace.id);
+    if (!placeId) { showError('اختر المكان أولاً'); return; }
+
+    // upload images sequentially and collect URLs
+    const files = $('adImages').files ? Array.from($('adImages').files).slice(0,8) : [];
+    const imageUrls = [];
+    for (const f of files){
+      const up = await uploadFileToServer(f, placeId);
+      const url = up && (up.fileUrl || up.url) ? (up.fileUrl || up.url) : null;
+      if (url) imageUrls.push(url);
     }
-
-    // تحميل الصور
-    const fileInputs = document.getElementById('adImages');
-    if (fileInputs && fileInputs.files) {
-      const imageUrls = [];
-      for (let i = 0; i < Math.min(fileInputs.files.length, 8); i++) {
-        const file = fileInputs.files[i];
-        const url = await uploadToGoogleDrive(file, 'ads');
-        imageUrls.push({ name: file.name, url });
-        recentUploads[file.name] = { url, name: file.name };
-      }
-      formData.images = imageUrls;
+    // upload video if present
+    let videoUrl = '';
+    const vfile = $('adVideo').files && $('adVideo').files[0];
+    if (vfile){
+      const upv = await uploadFileToServer(vfile, placeId);
+      videoUrl = upv && (upv.fileUrl || upv.url) ? (upv.fileUrl || upv.url) : '';
     }
-
-    // تحميل الفيديو
-    const videoInput = document.getElementById('adVideo');
-    if (videoInput && videoInput.files) {
-      const video = videoInput.files[0];
-      const videoUrl = await uploadToGoogleDrive(video, 'ads');
-      formData.video = videoUrl || '';
-    }
-
-    const logged = getLoggedPlace();
-    const placeIdToSend = (formData.placeId && formData.placeId !== '') ? formData.placeId : (logged && logged.id ? logged.id : '');
 
     const payload = {
       action: editingAdId ? 'updateAd' : 'addAd',
-      placeId: placeIdToSend,
-      adType: formData.adType,
-      adTitle: formData.adTitle,
-      adDescription: formData.adDescription,
-      startDate: formData.startDate,
-      endDate: formData.endDate,
-      coupon: formData.coupon,
-      images: JSON.stringify(formData.images.map(i => i.name)),
-      imageUrls: JSON.stringify(formData.images.map(i => i.url)),
-      videoFile: formData.video ? formData.video.name : '',
-      videoUrl: formData.video,
-      adStatus: formData.adStatus
+      placeId,
+      adType: form.adType.value,
+      adTitle: form.adTitle.value,
+      adDescription: form.adDescription.value,
+      startDate: form.startDate.value,
+      endDate: form.endDate.value,
+      coupon: form.coupon.value || '',
+      imageFiles: JSON.stringify(imageUrls.map(u => u)), // code.gs expects names or urls
+      videoFile: vfile ? vfile.name : '',
+      videoUrl: videoUrl || '',
+      adActiveStatus: form.adActiveStatus.value || ''
     };
+    if (editingAdId) payload.adId = String(editingAdId);
 
-    if (editingAdId) payload.adId = editingAdId;
-
-    const resp = await apiPost(payload);
-    if (!resp.ok || (resp.data && resp.data.success === false)) {
-      showError((resp.data && resp.data.error) || 'فشل حفظ/تحديث الإعلان');
-      return;
-    }
-
-    showSuccess(editingAdId ? 'تم تحديث الإعلان' : 'تم حفظ الإعلان');
-  
-  const areaValue = areaOptions.find(Boolean);
-  if (areaValue) {
-    await setSelectValueWhenReady('select[name="area"]', areaValue);
-  }
+    // prepare FormData
+    const fd = new FormData();
+    Object.keys(payload).forEach(k => fd.append(k, payload[k]));
+    const resp = await apiPostForm(fd);
+    if (!resp || resp.success===false) throw new Error((resp && (resp.error || (resp.data && resp.data.error))) || 'فشل حفظ الإعلان');
+    showSuccess(editingAdId ? 'تم تحديث الإعلان' : 'تم إضافة الإعلان');
+    // reset form
+    editingAdId = null;
+    $('adForm').reset();
+    $('adImagesPreview').innerHTML = ''; $('adVideoPreview').innerHTML = '';
+    await loadAdsForPlace(placeId);
+    await checkAdQuotaAndToggle(placeId);
+  }catch(err){
+    console.error(err); showError(err.message || 'خطأ أثناء حفظ الإعلان');
+  }finally{ showLoading(false); }
 }
 
-function parseLatLngFromMapLink(url) {
-  if (!url || typeof url !== 'string') return null;
-  
-  try {
-    url = url.trim();
-    
-    // نماذج مختلفة لروابط الخرائط
-    const patterns = [
-      /@(-?\d+\.\d+),\s*(-?\d+\.\d+)/,
-      /!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/,
-      /[?&]q=(-?\d+\.\d+),(-?\d+\.\d+)/,
-      /[?&]ll=(-?\d+\.\d+),(-?\d+\.\d+)/,
-      /[?&]mlat=(-?\d+\.\d+)&mlon=(-?\d+\.\d+)/,
-      /#map=\d+\/(-?\d+\.\d+)\/(-?\d+\.\d+)/,
-      /(-?\d+\.\d+)[, ]\s*(-?\d+\.\d+)/
-    ];
-    
-    for (const pattern of patterns) {
-      const match = url.match(pattern);
-      if (match) {
-        const lat = parseFloat(match[1]);
-        const lng = parseFloat(match[2]);
-        
-        if (Math.abs(lat) <= 90 && Math.abs(lng) <= 180) {
-          return { lat, lng };
-        }
-      }
-    }
-  } catch (e) {
-    console.warn('parseLatLngFromMapLink error', e);
-  }
-  
-  return null;
+async function deleteAdConfirm(adId){
+  if (!confirm('هل ترغب بحذف الإعلان؟')) return;
+  try{
+    showLoading(true);
+    const fd = new FormData();
+    fd.append('action','deleteAd');
+    fd.append('adId', String(adId));
+    const resp = await apiPostForm(fd);
+    if (!resp || resp.success===false) throw new Error((resp && (resp.error || (resp.data && resp.data.error))) || 'فشل الحذف');
+    showSuccess('تم حذف الإعلان');
+    if (currentPlace && currentPlace.id) await loadAdsForPlace(currentPlace.id);
+  }catch(err){ console.error(err); showError(err.message || 'خطأ أثناء الحذف'); }finally{ showLoading(false); }
 }
 
-/* ========================= نافذة الدفع ========================= */
-function showPaymentModal({ paymentId, amount, currency, placeId }) {
-  // إزالة النافذة السابقة إن وجدت
-  const existing = document.getElementById('paymentModal');
-  if (existing) existing.remove();
+/* ------------------ check ad quota ------------------ */
+async function checkAdQuotaAndToggle(placeId){
+  try{
+    const resp = await apiGet('remainingAds',{placeId});
+    let data = resp && resp.success && resp.data ? resp.data : resp;
+    if (data && data.data) data = data.data;
+    const remaining = Number((data && data.remaining) || 0);
+    const allowed = Number((data && data.allowed) || 0);
+    const used = Number((data && data.used) || 0);
+    $('adQuotaSummary').textContent = `الإعلانات: الكل ${allowed} • المستخدمة ${used} • المتبقي ${remaining}`;
+    const submitBtn = $('adForm').querySelector('button[type=submit]');
+    if (submitBtn) { submitBtn.disabled = remaining<=0; submitBtn.title = remaining<=0 ? 'لقد استنفدت حصة الإعلانات' : ''; }
+  }catch(e){ console.error(e); }
+}
 
-  const modal = document.createElement('div');
-  modal.id = 'paymentModal';
-  modal.style.cssText = `
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 9999;
-  `;
+/* ========================= Preview helpers ========================= */
+function previewSingleImage(file, targetId){
+  const p = $(targetId); if (!p) return; p.innerHTML = '';
+  if (!file) return;
+  const fr = new FileReader();
+  fr.onload = ()=> { const img = document.createElement('img'); img.src = fr.result; p.appendChild(img); };
+  fr.readAsDataURL(file);
+}
+function previewMultipleImages(files, targetId){
+  const p = $(targetId); if (!p) return; p.innerHTML = '';
+  files = files || [];
+  Array.from(files).slice(0,8).forEach(file=>{
+    const fr = new FileReader();
+    fr.onload = ()=> { const img = document.createElement('img'); img.src = fr.result; p.appendChild(img); };
+    fr.readAsDataURL(file);
+  });
+}
+function previewVideo(file, targetId){
+  const p = $(targetId); if (!p) return; p.innerHTML = '';
+  if (!file) return;
+  const fr = new FileReader();
+  fr.onload = ()=> {
+    const video = document.createElement('video'); video.controls=true; video.style.maxWidth='320px';
+    video.src = fr.result; p.appendChild(video);
+  };
+  fr.readAsDataURL(file);
+}
 
-  modal.innerHTML = `
-    <div style="background:#fff;padding:18px;border-radius:10px;max-width:720px;width:95%;direction:rtl;color:#111">
-      <h3 style="margin-top:0">معلومات الدفع</h3>
-      ${paymentId ? `<p>معرف طلب الدفع: <strong>${escapeHtml(paymentId)}</strong></p>` : '<p>لا يوجد معرف طلب دفع متاح حالياً.</p>'}
-      ${amount ? `<p>المبلغ المطلوب: <strong>${escapeHtml(String(amount))} ${escapeHtml(String(currency || 'SAR'))}</strong></p>` : ''}
-      <h4>طرق الدفع المتاحة</h4>
-      <div id="paymentMethods" style="margin-bottom:8px"></div>
-      <label style="display:block;margin-top:8px">ارفق إيصال الدفع (صورة)</label>
-      <input type="file" id="paymentReceipt" accept="image/*" style="display:block;margin:8px 0" />
-      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px">
-        <button id="paymentCancel" class="btn btn-secondary">إلغاء</button>
-        <button id="paymentSend" class="btn btn-primary">أرسل الإيصال</button>
-      </div>
-      <div id="paymentMessage" style="margin-top:10px;color:#333"></div>
-    </div>
-  `;
+/* ========================= Subscription bar ========================= */
+async function refreshSubscriptionBar(){
+  try{
+    if (!currentPlace || !currentPlace.id) { $('subscriptionStatusBar').style.display='none'; return; }
+    const resp = await apiPostForm((() => { const f=new FormData(); f.append('action','getDashboard'); f.append('placeId',currentPlace.id); return f; })());
+    const payload = resp && resp.data ? resp.data : resp;
+    const place = payload && payload.place ? payload.place : (payload || {});
+    if (!place || !place.raw) return;
+    const status = (place.raw['حالة الباقة'] || place.raw['packageStatus'] || '').toString().trim();
+    const pkg = (place.raw['الباقة'] || '').toString().trim();
+    const start = place.raw['تاريخ بداية الاشتراك'] || '';
+    const end = place.raw['تاريخ نهاية الاشتراك'] || '';
 
-  document.body.appendChild(modal);
+    const titleEl = $('subscriptionTitle'); const detailsEl = $('subscriptionDetails'); const countdownEl = $('subscriptionCountdown');
+    if (!status || status==='لا يوجد اشتراك'){ $('subscriptionStatusBar').style.display='none'; return; }
+    $('subscriptionStatusBar').style.display='block';
+    titleEl.textContent = pkg ? `الباقة: ${pkg}` : 'باقة';
+    detailsEl.textContent = status === 'نشطة' ? `نشطة — تنتهي: ${end||'غير محدد'}` : (status === 'قيد الدفع' ? 'قيد الدفع — ارفع إيصال الدفع' : `الحالة: ${status}`);
+    if (end){
+      // countdown days/hours
+      const endD = parseDateISO(end);
+      if (endD){
+        const diff = diffDaysHours(new Date(), endD);
+        countdownEl.textContent = `${diff.days} يوم و ${diff.hours} ساعة`;
+        // update every minute
+        clearInterval(countdownEl._timer);
+        countdownEl._timer = setInterval(()=> {
+          const d2 = diffDaysHours(new Date(), endD);
+          countdownEl.textContent = `${d2.days} يوم و ${d2.hours} ساعة`;
+        }, 60000);
+      } else countdownEl.textContent = '';
+    } else countdownEl.textContent = '';
+  }catch(e){ console.error(e); }
+}
 
-  // ملء طرق الدفع
-  const methodsContainer = modal.querySelector('#paymentMethods');
-  const methods = window.availablePaymentMethods || [];
-  
-  if (methods && methods.length) {
-    methods.forEach(method => {
-      const div = document.createElement('div');
-      div.style.cssText = 'padding:8px;border-radius:6px;border:1px solid #eee;margin-bottom:6px;background:#fafafa';
-      
-      const name = method.name || (method.raw && (method.raw['طرق الدفع'] || method.raw['طريقة الدفع'])) || 'طريقة دفع';
-      const details = (method.raw && (method.raw['معرف الدفع'] || method.id)) ? (method.raw['معرف الدفع'] || method.id) : '';
-      
-      div.innerHTML = `
-        <strong style="display:block">${escapeHtml(name)}</strong>
-        ${details ? `<div style="color:#666;margin-top:4px">تفاصيل: ${escapeHtml(String(details))}</div>` : ''}
-      `;
-      methodsContainer.appendChild(div);
+/* date helpers */
+function parseDateISO(s){
+  if (!s) return null;
+  const parts = s.split('-');
+  if (parts.length===3) return new Date(Number(parts[0]), Number(parts[1])-1, Number(parts[2]),23,59,59);
+  const d = new Date(s); return isNaN(d.getTime()) ? null : d;
+}
+function diffDaysHours(a,b){
+  let diff = b.getTime()-a.getTime(); if (diff<0) diff=0;
+  const days = Math.floor(diff / 86400000); diff -= days*86400000;
+  const hours = Math.floor(diff / 3600000);
+  return { days, hours };
+}
+
+/* ========================= Place status update ========================= */
+async function showPlaceStatusBar(place){
+  if (!place) return;
+  $('placeStatusBar').style.display = 'block';
+  const state = place.raw && (place.raw['حالة المكان'] || place.raw['حالة التسجيل'] || place.status) || '';
+  $('placeStatusMessage').textContent = state ? `الحالة الحالية: ${state}` : 'الحالة غير محددة';
+  document.querySelectorAll('#placeStatusButtons .status-btn').forEach(b=> b.classList.toggle('active', b.dataset.status===state));
+}
+function hidePlaceStatusBar(){ $('placeStatusBar').style.display='none'; }
+
+async function updatePlaceStatus(newStatus){
+  try{
+    if (!currentPlace || !currentPlace.id) { showError('سجل الدخول أولاً'); return; }
+    showLoading(true);
+    const fd = new FormData(); fd.append('action','updatePlace'); fd.append('placeId', String(currentPlace.id)); fd.append('status', newStatus);
+    const resp = await apiPostForm(fd);
+    if (!resp || resp.success===false) throw new Error((resp && (resp.error || (resp.data && resp.data.error))) || 'فشل التحديث');
+    // update local state
+    currentPlace.raw = currentPlace.raw || {};
+    currentPlace.raw['حالة المكان'] = newStatus;
+    currentPlace.raw['حالة التسجيل'] = newStatus;
+    saveLocalPlace(currentPlace);
+    showPlaceStatusBar(currentPlace);
+    showSuccess('تم تحديث حالة المكان');
+  }catch(e){ console.error(e); showError(e.message || 'فشل تحديث الحالة'); }finally{ showLoading(false); }
+}
+
+/* ========================= Helper functions ========================= */
+function escapeHtml(s){ if (!s) return ''; return String(s).replace(/[&<>"']/g, m=> ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+
+/* ========================= Utilities ========================= */
+async function populatePlacesSelects(){
+  // (reused earlier) call GET places
+  try{
+    const resp = await apiGet('places');
+    let list = [];
+    if (resp && resp.success && resp.data && resp.data.places) list = resp.data.places;
+    else if (Array.isArray(resp)) list = resp;
+    else if (resp && Array.isArray(resp.places)) list = resp.places;
+    const sel = $('adPlaceId'); if (!sel) return;
+    sel.innerHTML = '<option value="">اختر</option>';
+    list.forEach(p => {
+      const o = document.createElement('option'); o.value = p.id; o.textContent = p.name || (p.raw && p.raw['اسم المكان']) || p.id;
+      sel.appendChild(o);
     });
-  } else {
-    methodsContainer.textContent = 'لا توجد طرق دفع معرفة. تواصل مع الإدارة.';
-  }
-
-  // ربط الأحداث
-  const fileInput = modal.querySelector('#paymentReceipt');
-  const cancelBtn = modal.querySelector('#paymentCancel');
-  const sendBtn = modal.querySelector('#paymentSend');
-  const messageDiv = modal.querySelector('#paymentMessage');
-
-  cancelBtn.addEventListener('click', () => modal.remove());
-
-  sendBtn.addEventListener('click', async () => {
-    if (!fileInput.files || fileInput.files.length === 0) {
-      messageDiv.textContent = 'الرجاء اختيار صورة الإيصال أولاً';
-      return;
-    }
-
-    sendBtn.disabled = true;
-    sendBtn.textContent = 'جاري الرفع...';
-    messageDiv.textContent = '';
-
-    try {
-      const file = fileInput.files;
-      const base64 = await readFileAsBase64(file);
-
-      // رفع الملف
-      const uploadResp = await apiPost({
-        action: 'uploadMedia',
-        fileName: file.name,
-        mimeType: file.type,
-        fileData: base64,
-        placeId: placeId || ''
-      });
-
-      if (!uploadResp.ok) {
-        throw new Error('فشل رفع الملف');
-      }
-
-      const uploadData = uploadResp.data.data || uploadResp.data;
-      const fileUrl = (uploadData && (uploadData.fileUrl || uploadData.url)) || '';
-
-      if (!fileUrl) {
-        throw new Error('لم يتم الحصول على رابط الملف بعد الرفع');
-      }
-
-      // تحديث طلب الدفع
-      if (paymentId) {
-        const updateResp = await apiPost({
-          action: 'updatePaymentRequest',
-          paymentId: paymentId,
-          updates: {
-            'رابط إيصال الدفع': fileUrl,
-            receiptUrl: fileUrl,
-            الحالة: 'receipt_uploaded',
-            ملاحظات: 'تم رفع إيصال من صاحب المحل'
-          }
-        });
-
-        if (!updateResp.ok) {
-          throw new Error('تم رفع الإيصال لكن فشل ربطه بطلب الدفع');
-        }
-      }
-
-      messageDiv.textContent = 'تم إرسال الإيصال بنجاح. سيتم مراجعته والرد عليك قريباً.';
-      setTimeout(() => modal.remove(), 2000);
-
-    } catch (err) {
-      messageDiv.textContent = 'حدث خطأ أثناء الإرسال: ' + (err.message || err);
-      sendBtn.disabled = false;
-      sendBtn.textContent = 'أرسل الإيصال';
-    }
-  });
+    if (currentPlace && currentPlace.id) { sel.value = currentPlace.id; sel.disabled = true; }
+  }catch(e){ console.error(e); }
 }
 
-/* ========================= شريط حالة المكان ========================= */
-function showPlaceStatusBar(place) {
-  const statusBar = document.getElementById('placeStatusBar');
-  const statusMessage = document.getElementById('placeStatusMessage');
-  
-  if (!statusBar) return;
-  
-  if (!place || !place.id) {
-    statusBar.style.display = 'none';
-    if (statusMessage) statusMessage.textContent = '';
-    return;
-  }
-  
-  statusBar.style.display = 'block';
-  
-  const currentStatus = (place.status && String(place.status).trim() !== '') 
-    ? place.status 
-    : (place.raw && (place.raw['حالة المكان'] || place.raw['حالة التسجيل'])) 
-      ? (place.raw['حالة المكان'] || place.raw['حالة التسجيل']) 
-      : '';
-  
-  const buttons = document.querySelectorAll('#placeStatusButtons .status-btn');
-  buttons.forEach(button => {
-    button.classList.toggle('active', button.dataset.status === currentStatus);
-    button.disabled = false;
-    button.textContent = button.dataset.status;
-  });
-  
-  if (statusMessage) {
-    statusMessage.textContent = currentStatus ? `الحالة الحالية: ${currentStatus}` : 'الحالة غير محددة';
-  }
-  
-  initPlaceStatusButtons();
+/* ========================= Small UI helpers ========================= */
+function showTabByName(name){
+  window.showTab(name);
 }
 
-function hidePlaceStatusBar() {
-  const statusBar = document.getElementById('placeStatusBar');
-  const statusMessage = document.getElementById('placeStatusMessage');
-  
-  if (statusBar) statusBar.style.display = 'none';
-  if (statusMessage) statusMessage.textContent = '';
+/* ========================= Extra: set UI elements initially ========================= */
+function setUIAfterLogin(place){
+  saveLocalPlace(place);
+  setUIAfterLogin; // reuse earlier function (duplicate exists above for safety)
 }
-
-function initPlaceStatusButtons() {
-  const container = document.getElementById('placeStatusButtons');
-  if (!container) return;
-  
-  // إعادة إنشاء مستمعي الأحداث
-  container.querySelectorAll('.status-btn').forEach(button => {
-    const clone = button.cloneNode(true);
-    button.parentNode.replaceChild(clone, button);
-  });
-  
-  const buttons = document.querySelectorAll('#placeStatusButtons .status-btn');
-  buttons.forEach(button => {
-    button.addEventListener('click', async () => {
-      const status = button.dataset.status;
-      if (!status) return;
-      await updatePlaceStatus(status, button);
-    });
-  });
-}
-
-async function updatePlaceStatus(newStatus, buttonElement = null) {
-  let originalText = null;
-  
-  try {
-    const logged = getLoggedPlace();
-    const placeId = (logged && logged.id) ? logged.id : null;
-    
-    if (!placeId) {
-      throw new Error('لا يوجد مكان مسجّل للدخول');
-    }
-
-    const currentStatus = (logged && logged.status) 
-      ? logged.status 
-      : (logged && logged.raw && (logged.raw['حالة المكان'] || logged.raw['حالة التسجيل'])) 
-        ? (logged.raw['حالة المكان'] || logged.raw['حالة التسجيل']) 
-        : '';
-
-    // إذا كانت الحالة نفسها، لا حاجة للتحديث
-    if (String(currentStatus) === String(newStatus)) {
-      document.querySelectorAll('#placeStatusButtons .status-btn').forEach(button => {
-        button.classList.toggle('active', button.dataset.status === newStatus);
-      });
-      
-      const statusMessage = document.getElementById('placeStatusMessage');
-      if (statusMessage) statusMessage.textContent = `الحالة: ${newStatus}`;
-      return;
-    }
-
-    // تعطيل كل الأزرار أثناء التحديث
-    const buttons = document.querySelectorAll('#placeStatusButtons .status-btn');
-    buttons.forEach(button => button.disabled = true);
-
-    if (buttonElement) {
-      originalText = buttonElement.textContent;
-      buttonElement.textContent = 'جاري الحفظ...';
-    }
-
-    // إرسال التحديث للخادم
-    const resp = await apiPost({
-      action: 'updatePlace',
-      placeId: placeId,
-      status: newStatus
-    });
-
-    if (!resp.ok) {
-      throw new Error('فشل في التواصل مع الخادم');
-    }
-
-    const data = resp.data;
-    if (!data || data.success === false) {
-      throw new Error((data && data.error) ? data.error : 'استجابة غير متوقعة');
-    }
-
-    // تحديث البيانات المحلية
-    const stored = getLoggedPlace() || {};
-    stored.status = newStatus;
-    if (!stored.raw) stored.raw = {};
-    stored.raw['حالة المكان'] = newStatus;
-    stored.raw['حالة التسجيل'] = newStatus;
-    setLoggedPlace(stored);
-
-    // تحديث واجهة الأزرار
-    buttons.forEach(button => {
-      button.classList.toggle('active', button.dataset.status === newStatus);
-      button.disabled = false;
-      button.textContent = button.dataset.status;
-    });
-
-    if (buttonElement && originalText !== null) {
-      buttonElement.textContent = buttonElement.dataset.status;
-    }
-
-    const statusMessage = document.getElementById('placeStatusMessage');
-    if (statusMessage) {
-      statusMessage.textContent = `تم التحديث إلى: ${newStatus}`;
-    }
-
-    showSuccess('تم تحديث حالة المكان بنجاح');
-
-  } catch (err) {
-    console.error('updatePlaceStatus error', err);
-    showError(err.message || 'فشل تحديث حالة المكان');
-    
-    // استعادة الأزرار
-    document.querySelectorAll('#placeStatusButtons .status-btn').forEach(button => {
-      button.disabled = false;
-      button.textContent = button.dataset.status;
-    });
-    
-    if (buttonElement && originalText !== null) {
-      buttonElement.textContent = originalText;
-    }
-  }
-}
-
-/* ========================= مساعدات متنوعة ========================= */
-function showTab(tabName) {
-  // إخفاء كل المحتويات
-  document.querySelectorAll('.tab-content').forEach(content => {
-    content.style.display = 'none';
-  });
-  
-  // إزالة الفئة النشطة من كل التبويبات
-  document.querySelectorAll('.tab').forEach(tab => {
-    tab.classList.remove('active');
-  });
-  
-  // عرض المحتوى المطلوب
-  const targetContent = document.getElementById(tabName + '-tab');
-  if (targetContent) {
-    targetContent.style.display = 'block';
-  }
-  
-  // تفعيل التبويب
-  const targetTab = document.getElementById('tab-' + tabName);
-  if (targetTab) {
-    targetTab.classList.add('active');
-  }
-  
-  currentTab = tabName;
-}
-
-function clearImagePreview() {
-  const preview = document.getElementById('placeImagePreview');
-  if (preview) preview.innerHTML = '';
-  uploadedImages = [];
-}
-
-function clearAdForm(form) {
-  form.reset();
-  
-  const imagePreview = document.getElementById('adImagesPreview');
-  const videoPreview = document.getElementById('adVideoPreview');
-  
-  if (imagePreview) imagePreview.innerHTML = '';
-  if (videoPreview) videoPreview.innerHTML = '';
-  
-  uploadedImages = [];
-  uploadedVideos = [];
-}
-
-function startEditAd(ad) {
-  try {
-    editingAdId = ad.id || null;
-    const form = document.getElementById('adForm');
-    if (!form) return;
-
-    // ملء البيانات الأساسية
-    const fieldMap = {
-      'select[name="placeId"]': ad.placeId || '',
-      'select[name="adType"]': ad.type || '',
-      'input[name="adTitle"]': ad.title || '',
-      'input[name="coupon"]': ad.coupon || '',
-      'textarea[name="adDescription"]': ad.description || '',
-      'input[name="startDate"]': ad.startDate || '',
-      'input[name="endDate"]': ad.endDate || '',
-      'select[name="adActiveStatus"]': ad.adActiveStatus || ad.status || '',
-      'select[name="adStatus"]': ad.adStatus || ad.status || ''
-    };
-
-    for (const [selector, value] of Object.entries(fieldMap)) {
-      const element = form.querySelector(selector);
-      if (element) element.value = value;
-    }
-
-    // معاينة الصور
-    const imagePreview = document.getElementById('adImagesPreview');
-    if (imagePreview) {
-      imagePreview.innerHTML = '';
-      
-      if (ad.images && ad.images.length) {
-        const imagesArray = Array.isArray(ad.images) ? ad.images : 
-          (typeof ad.images === 'string' ? JSON.parse(ad.images) : []);
-        
-        imagesArray.forEach(image => {
-          const url = image && image.url ? image.url : (typeof image === 'string' ? image : '');
-          const name = image && image.name ? image.name : (typeof image === 'string' ? image : '');
-          
-          const container = document.createElement('div');
-          container.className = 'preview-image';
-          
-          if (url) {
-            const img = document.createElement('img');
-            img.src = url;
-            img.style.cssText = 'width:100%;height:90px;object-fit:cover';
-            container.appendChild(img);
-          } else if (name && recentUploads[name]) {
-            const img = document.createElement('img');
-            img.src = recentUploads[name].url;
-            img.style.cssText = 'width:100%;height:90px;object-fit:cover';
-            container.appendChild(img);
-          } else if (name) {
-            const placeholder = document.createElement('div');
-            placeholder.className = 'img-placeholder-file';
-            placeholder.textContent = name;
-            container.appendChild(placeholder);
-          }
-          
-          imagePreview.appendChild(container);
-        });
-      }
-    }
-
-    // معاينة الفيديو
-    const videoPreview = document.getElementById('adVideoPreview');
-    if (videoPreview) {
-      videoPreview.innerHTML = '';
-      
-      if (ad.videoUrl) {
-        const video = document.createElement('video');
-        video.src = ad.videoUrl;
-        video.controls = true;
-        video.style.width = '100%';
-        videoPreview.appendChild(video);
-      }
-    }
-
-    // تغيير نص الزر
-    const submitBtn = document.querySelector('#adForm button[type="submit"]');
-    if (submitBtn) submitBtn.textContent = 'تحديث الإعلان';
-    
-    // الانتقال لتبويب الإعلانات
-    showTab('ads');
-    
-  } catch (e) {
-    console.error('startEditAd failed', e);
-  }
-}
-
-async function tryPrefillPlaceForm(place) {
-  if (!place || !place.raw) return;
-  
-  try {
-    const raw = place.raw;
-    
-    // دالة مساعدة لملء الحقول
-    const setInput = (selector, value) => {
-      const element = document.querySelector(selector);
-      if (element && value !== undefined && value !== null) {
-        element.value = value;
-      }
-    };
-
-    // ملء البيانات الأساسية
-    const name = raw['اسم المكان'] || place.name || '';
-    setInput('input[name="placeName"]', name);
-    setInput('input[name="password"]', raw['كلمة المرور'] || place.password || '');
-    set
