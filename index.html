@@ -1,660 +1,288 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>خدماتك - إدارة الأماكن والإعلانات</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    
-    <style>
-        :root {
-            --primary-color: #4f46e5;
-            --primary-hover: #4338ca;
-            --success-color: #10b981;
-            --error-color: #ef4444;
-            --warning-color: #f59e0b;
-            --background-color: #f8fafc;
-            --card-background: #ffffff;
-            --text-primary: #1f2937;
-            --text-secondary: #6b7280;
-            --border-color: #e5e7eb;
-            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--background-color);
-            color: var(--text-primary);
-            line-height: 1.6;
-        }
-
-        body.dark {
-            --background-color: #111827;
-            --card-background: #1f2937;
-            --text-primary: #f9fafb;
-            --text-secondary: #d1d5db;
-            --border-color: #374151;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
-        .header {
-            background: linear-gradient(135deg, var(--primary-color) 0%, #6366f1 100%);
-            color: white;
-            padding: 1rem 0;
-            box-shadow: var(--shadow-lg);
-            margin-bottom: 2rem;
-        }
-
-        .header-content {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 20px;
-            flex-wrap: wrap;
-            gap: 1rem;
-        }
-
-        .logo {
-            font-size: 1.8rem;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .auth-section {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        .user-info {
-            display: none;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .btn {
-            background: var(--primary-color);
-            color: white;
-            border: none;
-            padding: 0.6rem 1.2rem;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            font-weight: 500;
-            transition: all 0.3s ease;
-        }
-
-        .btn:hover {
-            background: var(--primary-hover);
-        }
-
-        .btn:disabled {
-            background: #9ca3af;
-            cursor: not-allowed;
-        }
-
-        .btn-secondary {
-            background: #6b7280;
-        }
-
-        .btn-success {
-            background: var(--success-color);
-        }
-
-        .btn-danger {
-            background: var(--error-color);
-        }
-
-        .tabs {
-            display: flex;
-            background: var(--card-background);
-            border-radius: 8px;
-            box-shadow: var(--shadow);
-            margin-bottom: 2rem;
-            overflow: hidden;
-        }
-
-        .tab {
-            flex: 1;
-            padding: 1rem;
-            background: transparent;
-            border: none;
-            cursor: pointer;
-            font-size: 1rem;
-            font-weight: 500;
-            color: var(--text-secondary);
-            transition: all 0.3s ease;
-        }
-
-        .tab:hover {
-            background: rgba(79, 70, 229, 0.1);
-        }
-
-        .tab.active {
-            background: var(--primary-color);
-            color: white;
-        }
-
-        .tab-content {
-            background: var(--card-background);
-            border-radius: 8px;
-            padding: 2rem;
-            box-shadow: var(--shadow);
-            margin-bottom: 2rem;
-            display: none;
-        }
-
-        #placeStatusBar {
-            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-            color: white;
-            padding: 15px;
-            border-radius: 8px;
-            margin: 10px 0;
-            display: none;
-        }
-
-        #subscriptionStatusBar {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 15px;
-            border-radius: 8px;
-            margin: 10px 0;
-            display: none;
-        }
-
-        .subscription-content {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-
-        .form-group {
-            margin-bottom: 1.5rem;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-weight: 500;
-            color: var(--text-primary);
-        }
-
-        .form-control {
-            width: 100%;
-            padding: 0.75rem;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            font-size: 1rem;
-            background: var(--card-background);
-            color: var(--text-primary);
-        }
-
-        .form-row {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1rem;
-        }
-
-        .packages-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 1.5rem;
-        }
-
-        .pkg-card {
-            background: var(--card-background);
-            border: 2px solid var(--border-color);
-            border-radius: 12px;
-            padding: 1.5rem;
-            box-shadow: var(--shadow);
-            transition: all 0.3s ease;
-        }
-
-        .pkg-card:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-lg);
-        }
-
-        .ad-card {
-            background: var(--card-background);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 1.5rem;
-            margin-bottom: 1rem;
-            box-shadow: var(--shadow);
-        }
-
-        .alert {
-            padding: 1rem;
-            margin: 1rem 0;
-            border-radius: 6px;
-            font-weight: 500;
-            display: none;
-        }
-
-        .alert-success {
-            background: #d1fae5;
-            color: #065f46;
-            border: 1px solid #a7f3d0;
-        }
-
-        .alert-error {
-            background: #fee2e2;
-            color: #991b1b;
-            border: 1px solid #fca5a5;
-        }
-
-        #loading {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
-        }
-
-        .spinner {
-            width: 50px;
-            height: 50px;
-            border: 5px solid #f3f3f3;
-            border-top: 5px solid var(--primary-color);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-
-        .modal-content {
-            background: var(--card-background);
-            padding: 2rem;
-            border-radius: 8px;
-            width: 90%;
-            max-width: 500px;
-            box-shadow: var(--shadow-lg);
-        }
-
-        .preview {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-            margin-top: 0.5rem;
-        }
-
-        .preview img {
-            width: 100px;
-            height: 100px;
-            object-fit: cover;
-            border-radius: 6px;
-            border: 2px solid var(--border-color);
-        }
-
-        .status-btn {
-            background: rgba(255, 255, 255, 0.2);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            color: white;
-            padding: 8px 12px;
-            border-radius: 6px;
-            cursor: pointer;
-            margin: 0 5px;
-        }
-
-        .status-btn.active {
-            background: rgba(255, 255, 255, 0.9);
-            color: #d97706;
-            font-weight: 600;
-        }
-
-        @media (max-width: 768px) {
-            .form-row {
-                grid-template-columns: 1fr;
-            }
-            
-            .packages-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>لوحة إدارة الأماكن والإعلانات</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <style>
+    :root{
+      --primary:#4f46e5; --primary-dark:#4338ca; --success:#10b981; --danger:#ef4444;
+      --bg:#f8fafc; --card:#fff; --text:#111827; --muted:#6b7280; --border:#e5e7eb;
+    }
+    body{margin:0;font-family:Inter,system-ui,Segoe UI,Arial;background:var(--bg);color:var(--text);line-height:1.45}
+    .container{max-width:1100px;margin:24px auto;padding:20px}
+    header{background:linear-gradient(135deg,var(--primary),#6366f1);color:#fff;padding:14px;border-radius:10px;margin-bottom:18px}
+    .header-row{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+    .logo{font-weight:700;font-size:1.2rem;display:flex;align-items:center;gap:8px}
+    .btn{background:var(--primary);color:#fff;padding:8px 12px;border-radius:8px;border:0;cursor:pointer}
+    .btn.secondary{background:#6b7280}
+    .btn.success{background:var(--success)}
+    .tabs{display:flex;background:var(--card);border-radius:8px;overflow:hidden;margin-bottom:16px;box-shadow:0 6px 18px rgba(0,0,0,0.06)}
+    .tab{flex:1;padding:12px;text-align:center;cursor:pointer;color:var(--muted);font-weight:600}
+    .tab.active{background:var(--primary);color:#fff}
+    .panel{background:var(--card);padding:18px;border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,0.04);display:none}
+    .panel.active{display:block}
+    .form-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
+    .form-group{margin-bottom:12px}
+    label{display:block;margin-bottom:6px;font-weight:600}
+    input[type=text],input[type=email],input[type=url],input[type=tel],input[type=password],select,textarea,input[type=date]{width:100%;padding:10px;border:1px solid var(--border);border-radius:8px;background:transparent}
+    textarea{min-height:90px}
+    .preview{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+    .preview img{width:90px;height:90px;object-fit:cover;border-radius:8px;border:1px solid var(--border)}
+    .packages-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+    .pkg{border:1px solid var(--border);padding:12px;border-radius:8px}
+    .ad-item{border:1px solid var(--border);padding:12px;border-radius:8px;margin-bottom:10px;background:#fff}
+    .alert{padding:10px;border-radius:8px;margin-bottom:12px;display:none}
+    .alert.success{background:#d1fae5;color:#064e3b}
+    .alert.error{background:#fee2e2;color:#7f1d1d}
+    #loading{position:fixed;inset:0;background:rgba(0,0,0,0.35);display:none;align-items:center;justify-content:center;z-index:9999}
+    .spinner{width:44px;height:44px;border:5px solid #eee;border-top-color:var(--primary);border-radius:50%;animation:spin 1s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .status-btn{padding:8px 10px;border-radius:8px;border:0;background:rgba(255,255,255,0.15);color:#fff;margin-left:8px;cursor:pointer}
+    .status-btn.active{background:#fff;color:var(--primary);font-weight:700}
+    .small{font-size:0.9rem;color:var(--muted)}
+    .center{text-align:center}
+    @media (max-width:640px){.header-row{flex-direction:column;align-items:flex-start}}
+  </style>
 </head>
 <body>
-    <div id="loading">
-        <div class="spinner"></div>
+  <div id="loading"><div class="spinner"></div></div>
+
+  <header>
+    <div class="header-row container">
+      <div class="logo"><i class="fas fa-store"></i> خدماتك</div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div id="placeNameBanner" class="small" style="display:none"></div>
+        <button id="loginBtn" class="btn"><i class="fas fa-sign-in-alt"></i> تسجيل الدخول</button>
+        <button id="logoutBtn" class="btn secondary" style="display:none"><i class="fas fa-sign-out-alt"></i> خروج</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <div id="successAlert" class="alert success"></div>
+    <div id="errorAlert" class="alert error"></div>
+
+    <!-- شريط الحالة -->
+    <div id="placeStatusBar" style="display:none;margin-bottom:12px;padding:12px;border-radius:8px;background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+        <div id="placeStatusMessage">حالة المكان: ...</div>
+        <div id="placeStatusButtons">
+          <button class="status-btn" data-status="مفتوح">مفتوح</button>
+          <button class="status-btn" data-status="مغلق">مغلق</button>
+          <button class="status-btn" data-status="مغلق للصلاة">مغلق للصلاة</button>
+        </div>
+      </div>
     </div>
 
-    <header class="header">
-        <div class="header-content">
-            <div class="logo">
-                <i class="fas fa-store"></i>
-                خدماتك
-            </div>
-            <div class="auth-section">
-                <button id="themeToggleBtn" class="btn">
-                    <i id="themeIcon" class="fas fa-moon"></i>
-                </button>
-                <div id="loggedInUser" class="user-info">
-                    <i class="fas fa-user"></i>
-                    <span></span>
-                </div>
-                <button id="loginBtn" class="btn">
-                    <i class="fas fa-sign-in-alt"></i>
-                    تسجيل الدخول
-                </button>
-                <button id="logoutBtn" class="btn btn-secondary" style="display: none;">
-                    <i class="fas fa-sign-out-alt"></i>
-                    تسجيل الخروج
-                </button>
-            </div>
+    <!-- شريط الاشتراك -->
+    <div id="subscriptionStatusBar" style="display:none;margin-bottom:12px;padding:12px;border-radius:8px;background:linear-gradient(135deg,#667eea,#764ba2);color:#fff">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+        <div>
+          <div id="subscriptionTitle" style="font-weight:700"></div>
+          <div id="subscriptionDetails" class="small"></div>
         </div>
-    </header>
-
-    <div class="container">
-        <div id="successAlert" class="alert alert-success"></div>
-        <div id="errorAlert" class="alert alert-error"></div>
-
-        <!-- شريط حالة المكان -->
-        <div id="placeStatusBar">
-            <div id="placeStatusMessage"></div>
-            <div id="placeStatusButtons">
-                <button class="status-btn" data-status="مفتوح">مفتوح</button>
-                <button class="status-btn" data-status="مغلق">مغلق</button>
-                <button class="status-btn" data-status="مغلق للصلاة">مغلق للصلاة</button>
-            </div>
-        </div>
-
-        <!-- شريط ملخص الاشتراك -->
-        <div id="subscriptionStatusBar">
-            <div class="subscription-content">
-                <div>
-                    <h4 id="subscriptionTitle"></h4>
-                    <p id="subscriptionDetails"></p>
-                </div>
-                <div id="subscriptionCountdown"></div>
-            </div>
-        </div>
-
-        <!-- التبويبات -->
-        <div class="tabs">
-            <button class="tab active" id="tab-places" onclick="showTab('places')">
-                <i class="fas fa-store"></i> بيانات المكان
-            </button>
-            <button class="tab" id="tab-ads" onclick="showTab('ads')" style="display: none;">
-                <i class="fas fa-bullhorn"></i> الإعلانات
-            </button>
-            <button class="tab" id="tab-packages" onclick="showTab('packages')">
-                <i class="fas fa-box"></i> الباقات
-            </button>
-        </div>
-
-        <!-- تبويب الأماكن -->
-        <div id="places-tab" class="tab-content" style="display: block;">
-            <h2>بيانات المكان أو الخدمة</h2>
-            <form id="placeForm">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="placeName">اسم المكان *</label>
-                        <input type="text" name="placeName" id="placeName" class="form-control" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="password">كلمة المرور *</label>
-                        <input type="password" name="password" id="password" class="form-control" required>
-                    </div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="activityType">نوع النشاط</label>
-                        <select name="activityType" id="activityType" class="form-control">
-                            <option value="">اختر نوع النشاط</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="city">المدينة</label>
-                        <select name="city" id="city" class="form-control">
-                            <option value="">اختر المدينة</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="area">المنطقة</label>
-                        <select name="area" id="area" class="form-control">
-                            <option value="">اختر المنطقة</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="location">الموقع أو المول</label>
-                        <select name="location" id="location" class="form-control">
-                            <option value="">اختر الموقع</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label for="detailedAddress">العنوان التفصيلي</label>
-                    <input type="text" name="detailedAddress" id="detailedAddress" class="form-control">
-                </div>
-
-                <div class="form-group">
-                    <label for="mapLink">رابط الموقع على الخريطة</label>
-                    <input type="url" name="mapLink" id="mapLink" class="form-control">
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="phone">رقم التواصل</label>
-                        <input type="tel" name="phone" id="phone" class="form-control">
-                    </div>
-                    <div class="form-group">
-                        <label for="whatsappLink">رابط واتساب</label>
-                        <input type="url" name="whatsappLink" id="whatsappLink" class="form-control">
-                    </div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="email">البريد الإلكتروني</label>
-                        <input type="email" name="email" id="email" class="form-control">
-                    </div>
-                    <div class="form-group">
-                        <label for="website">الموقع الإلكتروني</label>
-                        <input type="url" name="website" id="website" class="form-control">
-                    </div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="workingHours">ساعات العمل</label>
-                        <input type="text" name="workingHours" id="workingHours" class="form-control">
-                    </div>
-                    <div class="form-group">
-                        <label for="delivery">خدمات التوصيل</label>
-                        <select name="delivery" id="delivery" class="form-control">
-                            <option value="">اختر</option>
-                            <option value="متوفر">متوفر</option>
-                            <option value="غير متوفر">غير متوفر</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label for="description">وصف مختصر</label>
-                    <textarea name="description" id="description" class="form-control" rows="3"></textarea>
-                </div>
-
-                <div class="form-group">
-                    <label for="placeImage">صورة شعار المكان</label>
-                    <input type="file" name="placeImage" id="placeImage" class="form-control" accept="image/*">
-                    <div id="placeImagePreview" class="preview"></div>
-                </div>
-
-                <div style="text-align: center; margin-top: 2rem;">
-                    <button type="submit" id="savePlaceBtn" class="btn btn-success">
-                        <i class="fas fa-save"></i> حفظ بيانات المكان
-                    </button>
-                    <button type="button" id="goPackagesBtn" class="btn" style="margin-right: 10px;">
-                        <i class="fas fa-box"></i> انتقل إلى الباقات
-                    </button>
-                </div>
-            </form>
-        </div>
-
-        <!-- تبويب الإعلانات -->
-        <div id="ads-tab" class="tab-content">
-            <h2>إدارة الإعلانات</h2>
-            
-            <div id="adQuotaSummary"></div>
-            <div id="adQuotaNotice"></div>
-
-            <form id="adForm">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="adPlaceId">المكان</label>
-                        <select name="placeId" id="adPlaceId" class="form-control" required>
-                            <option value="">اختر المكان</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="adType">نوع الإعلان</label>
-                        <select name="adType" id="adType" class="form-control" required>
-                            <option value="">اختر نوع الإعلان</option>
-                            <option value="عرض خاص">عرض خاص</option>
-                            <option value="منتج جديد">منتج جديد</option>
-                            <option value="خدمة">خدمة</option>
-                            <option value="حدث">حدث</option>
-                            <option value="أخرى">أخرى</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label for="adTitle">عنوان الإعلان *</label>
-                    <input type="text" name="adTitle" id="adTitle" class="form-control" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="adDescription">وصف الإعلان</label>
-                    <textarea name="adDescription" id="adDescription" class="form-control" rows="4"></textarea>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="startDate">تاريخ البداية</label>
-                        <input type="date" name="startDate" id="startDate" class="form-control" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="endDate">تاريخ النهاية</label>
-                        <input type="date" name="endDate" id="endDate" class="form-control" required>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label for="coupon">كوبون خصم (اختياري)</label>
-                    <input type="text" name="coupon" id="coupon" class="form-control">
-                </div>
-
-                <div class="form-group">
-                    <label for="adImages">صور الإعلان (حتى 8 صور)</label>
-                    <input type="file" id="adImages" class="form-control" accept="image/*" multiple>
-                    <div id="adImagesPreview" class="preview"></div>
-                </div>
-
-                <div class="form-group">
-                    <label for="adVideo">فيديو الإعلان (اختياري)</label>
-                    <input type="file" id="adVideo" class="form-control" accept="video/*">
-                    <div id="adVideoPreview" class="preview"></div>
-                </div>
-
-                <div class="form-group">
-                    <label for="adActiveStatus">حالة الإعلان</label>
-                    <select name="adActiveStatus" id="adActiveStatus" class="form-control">
-                        <option value="">اختر الحالة</option>
-                        <option value="نشط">نشط</option>
-                        <option value="غير نشط">غير نشط</option>
-                    </select>
-                </div>
-
-                <div style="text-align: center;">
-                    <button type="submit" class="btn btn-success">
-                        <i class="fas fa-save"></i> حفظ الإعلان
-                    </button>
-                </div>
-            </form>
-
-            <hr style="margin: 2rem 0;">
-            
-            <h3>إعلاناتك</h3>
-            <div id="adsListContainer">
-                <p>لا توجد إعلانات حالياً.</p>
-            </div>
-        </div>
-
-        <!-- تبويب الباقات -->
-        <div id="packages-tab" class="tab-content">
-            <h2>الباقات المتاحة</h2>
-            <p>اختر الباقة المناسبة لاحتياجاتك:</p>
-            <div id="packagesGrid" class="packages-grid"></div>
-        </div>
+        <div id="subscriptionCountdown" style="background:rgba(255,255,255,0.12);padding:8px;border-radius:8px;font-weight:700"></div>
+      </div>
     </div>
 
-    <!-- نافذة تسجيل الدخول -->
-    <div id="loginModal" class="modal">
-        <div class="modal-content">
-            <h3>تسجيل الدخول</h3>
-            <form id="loginForm">
-                <div class="form-group">
-                    <label for="phoneOrId">رقم الهاتف أو ID المكان</label>
-                    <input type="text" name="phoneOrId" id="phoneOrId" class="form-control" required>
-                </div>
-                <div class="form-group">
-                    <label for="loginPassword">كلمة المرور</label>
-                    <input type="password" name="password" id="loginPassword" class="form-control" required>
-                </div>
-                <div style="text-align: center;">
-                    <button type="submit" class="btn btn-success">دخول</button>
-                    <button type="button" id="loginCancel" class="btn btn-secondary">إلغاء</button>
-                </div>
-            </form>
-        </div>
+    <div class="tabs">
+      <div class="tab active" id="tab-btn-places" onclick="showTab('places')">بيانات المكان</div>
+      <div class="tab" id="tab-btn-ads" onclick="showTab('ads')" style="display:none">الإعلانات</div>
+      <div class="tab" id="tab-btn-packages" onclick="showTab('packages')">الباقات</div>
     </div>
 
-    <script src="script.js"></script>
+    <!-- بيانات المكان -->
+    <section id="tab-places" class="panel active">
+      <h3>بيانات المكان</h3>
+      <form id="placeForm">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="placeName">اسم المكان *</label>
+            <input id="placeName" name="placeName" type="text" required>
+          </div>
+          <div class="form-group">
+            <label for="password">كلمة المرور *</label>
+            <input id="password" name="password" type="password" required>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="activityType">نوع النشاط</label>
+            <select id="activityType" name="activityType"><option value="">اختر</option></select>
+          </div>
+          <div class="form-group">
+            <label for="city">المدينة</label>
+            <select id="city" name="city"><option value="">اختر</option></select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="area">المنطقة</label>
+            <select id="area" name="area"><option value="">اختر</option></select>
+          </div>
+          <div class="form-group">
+            <label for="location">الموقع/المول</label>
+            <select id="location" name="location"><option value="">اختر</option></select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="detailedAddress">العنوان التفصيلي</label>
+          <input id="detailedAddress" name="detailedAddress" type="text">
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="phone">رقم التواصل</label>
+            <input id="phone" name="phone" type="tel">
+          </div>
+          <div class="form-group">
+            <label for="whatsappLink">رابط واتساب</label>
+            <input id="whatsappLink" name="whatsappLink" type="url">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="email">البريد الإلكتروني</label>
+            <input id="email" name="email" type="email">
+          </div>
+          <div class="form-group">
+            <label for="website">الموقع الإلكتروني</label>
+            <input id="website" name="website" type="url">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="workingHours">ساعات العمل</label>
+            <input id="workingHours" name="workingHours" type="text">
+          </div>
+          <div class="form-group">
+            <label for="delivery">خدمات التوصيل</label>
+            <select id="delivery" name="delivery"><option value="">اختر</option><option value="متوفر">متوفر</option><option value="غير متوفر">غير متوفر</option></select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="description">وصف مختصر</label>
+          <textarea id="description" name="description"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="placeImage">صورة شعار/مكان</label>
+          <input id="placeImage" type="file" accept="image/*">
+          <div id="placeImagePreview" class="preview"></div>
+        </div>
+
+        <div class="center">
+          <button class="btn success" type="submit">حفظ المكان</button>
+          <button type="button" id="btn-to-packages" class="btn" style="margin-left:8px">الباقات</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- الإعلانات -->
+    <section id="tab-ads" class="panel">
+      <h3>الإعلانات</h3>
+      <div id="adQuotaSummary" class="small" style="margin-bottom:8px"></div>
+      <form id="adForm">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="adPlaceId">المكان</label>
+            <select id="adPlaceId" name="placeId"><option value="">اختر</option></select>
+          </div>
+          <div class="form-group">
+            <label for="adType">نوع الإعلان</label>
+            <select id="adType" name="adType"><option value="">اختر</option><option>عرض خاص</option><option>منتج جديد</option><option>خدمة</option><option>حدث</option><option>أخرى</option></select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="adTitle">عنوان الإعلان *</label>
+          <input id="adTitle" name="adTitle" type="text" required>
+        </div>
+
+        <div class="form-group">
+          <label for="adDescription">وصف الإعلان</label>
+          <textarea id="adDescription" name="adDescription"></textarea>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="startDate">تاريخ البداية</label>
+            <input id="startDate" name="startDate" type="date">
+          </div>
+          <div class="form-group">
+            <label for="endDate">تاريخ النهاية</label>
+            <input id="endDate" name="endDate" type="date">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="coupon">كوبون خصم</label>
+          <input id="coupon" name="coupon" type="text">
+        </div>
+
+        <div class="form-group">
+          <label for="adImages">صور (حتى 8)</label>
+          <input id="adImages" type="file" accept="image/*" multiple>
+          <div id="adImagesPreview" class="preview"></div>
+        </div>
+
+        <div class="form-group">
+          <label for="adVideo">فيديو (اختياري)</label>
+          <input id="adVideo" type="file" accept="video/*">
+          <div id="adVideoPreview" class="preview"></div>
+        </div>
+
+        <div class="form-group">
+          <label for="adActiveStatus">حالة الإعلان</label>
+          <select id="adActiveStatus" name="adActiveStatus"><option value="">اختر</option><option value="نشط">نشط</option><option value="غير نشط">غير نشط</option></select>
+        </div>
+
+        <div class="center">
+          <button class="btn success" type="submit">حفظ الإعلان</button>
+        </div>
+      </form>
+
+      <hr style="margin:16px 0">
+
+      <div id="adsListContainer">لا توجد إعلانات حالياً.</div>
+    </section>
+
+    <!-- الباقات -->
+    <section id="tab-packages" class="panel">
+      <h3>الباقات</h3>
+      <div id="packagesGrid" class="packages-grid"></div>
+    </section>
+  </main>
+
+  <!-- نافذة تسجيل الدخول بسيطة -->
+  <div id="loginModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);align-items:center;justify-content:center;z-index:999">
+    <div style="background:#fff;padding:18px;border-radius:8px;width:90%;max-width:420px">
+      <h3>تسجيل الدخول</h3>
+      <form id="loginForm">
+        <div class="form-group">
+          <label for="phoneOrId">رقم الهاتف أو ID المكان</label>
+          <input id="phoneOrId" name="phoneOrId" type="text" required>
+        </div>
+        <div class="form-group">
+          <label for="loginPassword">كلمة المرور</label>
+          <input id="loginPassword" name="password" type="password" required>
+        </div>
+        <div style="text-align:center">
+          <button class="btn success" type="submit">دخول</button>
+          <button type="button" id="loginCancel" class="btn secondary" style="margin-left:8px">إلغاء</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
 </body>
 </html>
