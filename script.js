@@ -8003,7 +8003,6 @@
 
 
 
-
 /* script.js - كامل ومتكامل مع code.gs (نسخة مصححة)
    ضع index.html و script.js بنفس المجلد، وافتح index.html في المتصفح.
 */
@@ -8793,4 +8792,117 @@ async function handlePositionAndFill(lat,lng) {
   try {
     const mapInput = document.querySelector('input[name="mapLink"]'); if (mapInput) { mapInput.value = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(lat + ',' + lng)}`; mapInput.dispatchEvent(new Event('input',{bubbles:true})); mapInput.dispatchEvent(new Event('change',{bubbles:true})); }
     const g = await reverseGeocode(lat,lng); if (!g) return; const address = g.address || {}; const detailed = g.display_name || '';
-    const
+    const addrInput = document.querySelector('input[name="detailedAddress"]'); if (addrInput && (!addrInput.value || addrInput.value.trim()==='')) addrInput.value = detailed;
+    const cityVal = [address.city,address.town,address.village,address.county,address.state].find(Boolean); if (cityVal) { await setSelectValueWhenReady('select[name="city"]', cityVal); updateAreas(); }
+    const areaVal = [address.suburb,address.neighbourhood,address.hamlet,address.village,address.city_district].find(Boolean); if (areaVal) await setSelectValueWhenReady('select[name="area"]', areaVal);
+  } catch (e) { console.error(e); }
+}
+async function reverseGeocode(lat,lng) {
+  try {
+    const url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lng)}&addressdetails=1`;
+    const r = await fetch(url, { headers: { 'Accept': 'application/json', 'User-Agent': 'Khedmatak-App/1.0' } });
+    if (!r.ok) return null; return await r.json();
+  } catch (e) { console.warn(e); return null; }
+}
+async function autoFillFromMapLink(url) {
+  const coords = parseLatLngFromMapLink(url); if (!coords) return; const g = await reverseGeocode(coords.lat, coords.lng); if (!g) return; const address = g.address || {}; const detailed = g.display_name || '';
+  const addrInput = document.querySelector('input[name="detailedAddress"]'); if (addrInput && (!addrInput.value || addrInput.value.trim()==='')) addrInput.value = detailed;
+  const cityVal = [address.city,address.town,address.village,address.county,address.state].find(Boolean); if (cityVal) { await setSelectValueWhenReady('select[name="city"]', cityVal); updateAreas(); }
+  const areaVal = [address.suburb,address.neighbourhood,address.hamlet,address.village,address.city_district].find(Boolean); if (areaVal) await setSelectValueWhenReady('select[name="area"]', areaVal);
+}
+function parseLatLngFromMapLink(url) {
+  if (!url) return null;
+  try {
+    const patterns = [/@(-?\d+\.\d+),\s*(-?\d+\.\d+)/, /[?&]q=(-?\d+\.\d+),(-?\d+\.\d+)/, /[?&]ll=(-?\d+\.\d+),(-?\d+\.\d+)/, /#map=\d+\/(-?\d+\.\d+)\/(-?\d+\.\d+)/, /(-?\d+\.\d+)[, ]\s*(-?\d+\.\d+)/];
+    for (const re of patterns) { const m = url.match(re); if (m) { const lat = parseFloat(m[1]), lng = parseFloat(m[2]); if (!isNaN(lat) && !isNaN(lng)) return { lat, lng }; } }
+  } catch { }
+  return null;
+}
+function setSelectValueWhenReady(selector, value, retries=12, interval=200) {
+  return new Promise(resolve => {
+    if (!selector || value==null || String(value).trim()==='') return resolve(false);
+    let attempts = 0;
+    const trySet = () => {
+      attempts++;
+      const el = (typeof selector === 'string') ? document.querySelector(selector) : selector;
+      if (el) {
+        for (const o of Array.from(el.options)) {
+          if (String(o.value) === String(value) || String(o.text).trim() === String(value) || (String(o.text).toLowerCase().includes(String(value).toLowerCase()))) {
+            el.value = o.value; resolve(true); return;
+          }
+        }
+      }
+      if (attempts >= retries) return resolve(false);
+      setTimeout(trySet, interval);
+    };
+    trySet();
+  });
+}
+
+/* ========================= Utilities & UI helpers ========================= */
+function showTab(name) {
+  ['places','ads','packages'].forEach(t => { const btn = document.getElementById('tab-btn-' + t); const panel = document.getElementById('tab-' + t); if (btn) btn.classList.toggle('active', t===name); if (panel) panel.classList.toggle('active', t===name); });
+  currentTab = name;
+}
+function showLoading(v) { const el=document.getElementById('loading'); if (!el) return; el.style.display = v ? 'flex' : 'none'; }
+function showSuccess(msg) { const el=document.getElementById('successAlert'); if (!el) return; el.textContent = msg; el.style.display = 'block'; setTimeout(()=>el.style.display='none',4000); }
+function showError(msg) { const el=document.getElementById('errorAlert'); if (!el) return; el.textContent = msg; el.style.display = 'block'; setTimeout(()=>el.style.display='none',6000); }
+function tryPrefillPlaceForm(place) {
+  return new Promise(resolve => {
+    try {
+      if (!place || !place.raw) return resolve(false);
+      const raw = place.raw;
+      const set = (sel, val) => { const el = document.querySelector(sel); if (el && val != null) el.value = val; };
+      set('input[name="placeName"]', raw['اسم المكان'] || place.name || '');
+      set('input[name="phone"]', raw['رقم التواصل'] || '');
+      set('input[name="email"]', raw['البريد الإلكتروني'] || '');
+      set('input[name="website"]', raw['الموقع الالكتروني'] || '');
+      set('input[name="detailedAddress"]', raw['العنوان التفصيلي'] || '');
+      set('input[name="mapLink"]', raw['رابط الموقع على الخريطة'] || '');
+      set('textarea[name="description"]', raw['وصف مختصر '] || raw['وصف'] || '');
+      setSelectValueWhenReady('select[name="activityType"]', raw['نوع النشاط / الفئة'] || raw['نوع النشاط'] || '');
+      setSelectValueWhenReady('select[name="city"]', raw['المدينة'] || '');
+      updateAreas();
+      setSelectValueWhenReady('select[name="area"]', raw['المنطقة'] || '');
+      setSelectValueWhenReady('select[name="location"]', raw['الموقع او المول'] || '');
+      // logo preview
+      const logo = raw['رابط صورة شعار المكان'] || raw['صورة شعار أو صورة المكان'] || '';
+      if (logo) { const prev = document.getElementById('placeImagePreview'); if (prev) { prev.innerHTML=''; const img=document.createElement('img'); img.src = logo; prev.appendChild(img); } }
+      resolve(true);
+    } catch (e) { resolve(false); }
+  });
+}
+function clearImagePreview() { const p = document.getElementById('placeImagePreview'); if (p) p.innerHTML=''; if (document.getElementById('placeImage')) document.getElementById('placeImage').value = ''; uploadedImages = []; }
+function clearAdForm(form) { try { form.reset(); document.getElementById('adImagesPreview').innerHTML=''; document.getElementById('adVideoPreview').innerHTML=''; uploadedImages=[]; uploadedVideos=[]; editingAdId = null; const submitBtn = document.querySelector('#adForm button[type="submit"]'); if (submitBtn) submitBtn.textContent = 'حفظ الإعلان'; } catch {} }
+
+/* ========================= Place status bar helpers ========================= */
+function showPlaceStatusBar(place) {
+  const bar = document.getElementById('placeStatusBar'); const msg = document.getElementById('placeStatusMessage');
+  if (!bar || !msg) return;
+  if (!place) { bar.style.display = 'none'; msg.textContent = ''; return; }
+  bar.style.display = 'block';
+  const current = (place.status && String(place.status).trim()) || (place.raw && (place.raw['حالة المكان'] || place.raw['حالة التسجيل'])) || '';
+  msg.textContent = current ? `الحالة الحالية: ${current}` : 'الحالة غير محددة';
+  document.querySelectorAll('#placeStatusButtons .status-btn').forEach(b => { b.classList.toggle('active', b.dataset.status === current); b.onclick = async () => { await updatePlaceStatus(b.dataset.status); }; });
+}
+function hidePlaceStatusBar(){ const bar=document.getElementById('placeStatusBar'); if (bar) bar.style.display='none'; }
+async function updatePlaceStatus(newStatus) {
+  try {
+    const logged = getLoggedPlace();
+    if (!logged || !logged.id) { showError('لا يوجد مكان مسجل'); return; }
+    showLoading(true);
+    const resp = await apiPost({ action: 'updatePlace', placeId: logged.id, status: newStatus });
+    if (!resp.ok) throw new Error('فشل تحديث الحالة');
+    const d = resp.data; if (d && d.success === false) throw new Error(d.error || 'فشل تحديث الحالة');
+    logged.raw = logged.raw || {}; logged.raw['حالة المكان'] = newStatus; logged.raw['حالة التسجيل'] = newStatus; setLoggedPlace(logged);
+    showPlaceStatusBar(logged); showSuccess('تم تحديث حالة المكان');
+  } catch (e) { console.error(e); showError(e.message || 'خطأ أثناء تحديث الحالة'); } finally { showLoading(false); }
+}
+
+/* ========================= Helpers (dates) ========================= */
+function parseDateISO(s) { if (!s) return null; if (s instanceof Date) return s; const parts = String(s).split('-'); if (parts.length===3) { return new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]), 23, 59, 59); } const d = new Date(s); return isNaN(d.getTime()) ? null : d; }
+function diffDaysHours(a,b) { if (!a || !b) return { days:0, hours:0 }; let diff = b.getTime() - a.getTime(); if (diff < 0) diff = 0; const days = Math.floor(diff / 86400000); diff -= days * 86400000; const hours = Math.floor(diff / 3600000); return { days, hours }; }
+function daysBetween(a,b) { const ms = b.getTime() - a.getTime(); return Math.max(0, Math.ceil(ms / 86400000)); }
+
+/* ========================= Utilities: parse/show errors ========================= */
+/* تم الانتهاء من الملف */
