@@ -765,7 +765,7 @@
 </body>
 </html>
 
- -->
+
 
 
 
@@ -942,7 +942,7 @@
       </div>
     </div>
 
-    <!-- Panel: Places -->
+
     <section id="tab-places" class="panel active">
       <h3>بيانات المكان</h3>
       <form id="placeForm">
@@ -1060,7 +1060,7 @@
       </form>
     </section>
 
-    <!-- Panel: Ads -->
+   
     <section id="tab-ads" class="panel">
       <h3>إدارة الإعلانات</h3>
       <div id="adQuotaSummary" style="color:var(--muted);margin-bottom:6px"></div>
@@ -1152,14 +1152,14 @@
       <div id="adsListContainer"></div>
     </section>
 
-    <!-- Panel: Packages -->
+  
     <section id="tab-packages" class="panel">
       <h3>الباقات</h3>
       <div id="packagesGrid"></div>
     </section>
   </div>
 
-  <!-- Login modal -->
+ 
   <div id="loginModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:99;align-items:center;justify-content:center">
     <div style="background:var(--card);border:1px solid var(--border);width:92%;max-width:420px;border-radius:10px;padding:14px">
       <h3 style="margin:4px 0 10px">تسجيل الدخول</h3>
@@ -1186,6 +1186,7 @@
 
 
 
+-->
 
 
 
@@ -1201,6 +1202,1340 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>لوحة التحكم - خدامتك</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <style>
+    :root {
+      --mdc-theme-primary: #6200ee;
+      --mdc-theme-primary-light: #9e47ff;
+      --mdc-theme-secondary: #03dac6;
+      --mdc-theme-background: #ffffff;
+      --mdc-theme-surface: #ffffff;
+      --mdc-theme-error: #b00020;
+      --mdc-theme-on-primary: #ffffff;
+      --mdc-theme-on-secondary: #000000;
+      --mdc-theme-on-surface: #000000;
+      --mdc-theme-on-error: #ffffff;
+      --mdc-theme-text-primary-on-background: rgba(0, 0, 0, 0.87);
+      --mdc-theme-text-secondary-on-background: rgba(0, 0, 0, 0.6);
+      --mdc-theme-text-hint-on-background: rgba(0, 0, 0, 0.38);
+      --app-bar-height: 56px;
+      --bottom-nav-height: 56px;
+    }
+
+    body.dark {
+      --mdc-theme-primary: #bb86fc;
+      --mdc-theme-primary-light: #e1bee7;
+      --mdc-theme-secondary: #03dac6;
+      --mdc-theme-background: #121212;
+      --mdc-theme-surface: #1e1e1e;
+      --mdc-theme-error: #cf6679;
+      --mdc-theme-on-primary: #000000;
+      --mdc-theme-on-secondary: #000000;
+      --mdc-theme-on-surface: #ffffff;
+      --mdc-theme-on-error: #000000;
+      --mdc-theme-text-primary-on-background: rgba(255, 255, 255, 1);
+      --mdc-theme-text-secondary-on-background: rgba(255, 255, 255, 0.7);
+      --mdc-theme-text-hint-on-background: rgba(255, 255, 255, 0.5);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Cairo', sans-serif;
+      background-color: var(--mdc-theme-background);
+      color: var(--mdc-theme-text-primary-on-background);
+      line-height: 1.5;
+      direction: rtl;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      position: relative;
+      padding-bottom: var(--bottom-nav-height);
+    }
+
+    .main-content {
+      flex: 1;
+      padding: 16px;
+      padding-bottom: calc(var(--bottom-nav-height) + 16px);
+    }
+
+    .mdc-layout-grid {
+      padding: 0;
+      margin: 0;
+    }
+
+    .mdc-layout-grid__inner {
+      margin: auto;
+      max-width: 1200px;
+    }
+
+    .mdc-card {
+      background-color: var(--mdc-theme-surface);
+      border-radius: 8px;
+      box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14),
+                  0 1px 5px 0 rgba(0, 0, 0, 0.12),
+                  0 3px 1px -2px rgba(0, 0, 0, 0.2);
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+
+    .app-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: var(--app-bar-height);
+      background-color: var(--mdc-theme-primary);
+      color: var(--mdc-theme-on-primary);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      z-index: 100;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .app-bar h1 {
+      font-size: 1.2rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .user-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: var(--bottom-nav-height);
+      background-color: var(--mdc-theme-surface);
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      border-top: 1px solid rgba(0, 0, 0, 0.12);
+      z-index: 100;
+      box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    body.dark .bottom-nav {
+      border-top-color: rgba(255, 255, 255, 0.12);
+    }
+
+    .bottom-nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+      color: var(--mdc-theme-text-secondary-on-background);
+      font-size: 0.75rem;
+      padding: 8px;
+      border-radius: 4px;
+      transition: all 0.2s;
+      flex: 1;
+      height: 100%;
+    }
+
+    .bottom-nav-item.active {
+      color: var(--mdc-theme-primary);
+      background-color: rgba(98, 0, 238, 0.1);
+    }
+
+    .bottom-nav-item i {
+      font-size: 1.25rem;
+      margin-bottom: 4px;
+    }
+
+    .status-bar {
+      background-color: var(--mdc-theme-surface);
+      border: 1px solid rgba(0, 0, 0, 0.12);
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 16px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    body.dark .status-bar {
+      border-color: rgba(255, 255, 255, 0.12);
+    }
+
+    .status-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .status-btn {
+      padding: 6px 12px;
+      border: 1px solid rgba(0, 0, 0, 0.12);
+      border-radius: 20px;
+      background-color: transparent;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 0.8rem;
+    }
+
+    body.dark .status-btn {
+      border-color: rgba(255, 255, 255, 0.12);
+    }
+
+    .status-btn.active {
+      background-color: var(--mdc-theme-primary);
+      color: var(--mdc-theme-on-primary);
+      border-color: var(--mdc-theme-primary);
+    }
+
+    .mdc-button {
+      background-color: transparent;
+      border: none;
+      border-radius: 4px;
+      padding: 8px 16px;
+      cursor: pointer;
+      font-family: inherit;
+      font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: background-color 0.2s;
+    }
+
+    .mdc-button--raised {
+      background-color: var(--mdc-theme-primary);
+      color: var(--mdc-theme-on-primary);
+    }
+
+    .mdc-button--outlined {
+      border: 1px solid var(--mdc-theme-primary);
+      color: var(--mdc-theme-primary);
+    }
+
+    .mdc-button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .input-field {
+      margin-bottom: 16px;
+      position: relative;
+    }
+
+    .input-field label {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      color: var(--mdc-theme-text-hint-on-background);
+      font-size: 1rem;
+      transition: all 0.2s;
+      pointer-events: none;
+    }
+
+    .input-field input,
+    .input-field select,
+    .input-field textarea {
+      width: 100%;
+      padding: 16px;
+      border: 1px solid rgba(0, 0, 0, 0.12);
+      border-radius: 4px;
+      background-color: transparent;
+      color: var(--mdc-theme-text-primary-on-background);
+      font-size: 1rem;
+      transition: border-color 0.2s;
+    }
+
+    body.dark .input-field input,
+    body.dark .input-field select,
+    body.dark .input-field textarea {
+      border-color: rgba(255, 255, 255, 0.12);
+    }
+
+    .input-field input:focus,
+    .input-field select:focus,
+    .input-field textarea:focus {
+      outline: none;
+      border-color: var(--mdc-theme-primary);
+    }
+
+    .input-field input:focus + label,
+    .input-field select:focus + label,
+    .input-field textarea:focus + label,
+    .input-field input:not(:placeholder-shown) + label,
+    .input-field select:not([value=""]) + label,
+    .input-field textarea:not(:placeholder-shown) + label {
+      top: 0;
+      right: 16px;
+      font-size: 0.75rem;
+      color: var(--mdc-theme-primary);
+    }
+
+    .input-field textarea {
+      min-height: 100px;
+      resize: vertical;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+
+    @media (max-width: 768px) {
+      .grid-2, .grid-3 {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 16px;
+    }
+
+    .preview {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .preview img {
+      width: 80px;
+      height: 80px;
+      object-fit: cover;
+      border-radius: 4px;
+      border: 1px solid rgba(0, 0, 0, 0.12);
+    }
+
+    body.dark .preview img {
+      border-color: rgba(255, 255, 255, 0.12);
+    }
+
+    .ad-card {
+      background-color: var(--mdc-theme-surface);
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+
+    .ad-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .pkg {
+      background-color: var(--mdc-theme-surface);
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+      padding: 16px;
+      text-align: center;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .pkg:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-content {
+      background-color: var(--mdc-theme-surface);
+      border-radius: 8px;
+      padding: 24px;
+      width: 90%;
+      max-width: 400px;
+    }
+
+    .modal-content h3 {
+      margin-bottom: 16px;
+      font-size: 1.25rem;
+    }
+
+    #loading {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 1001;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #loading .spinner {
+      width: 48px;
+      height: 48px;
+      border: 4px solid rgba(0, 0, 0, 0.1);
+      border-top-color: var(--mdc-theme-primary);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .countdown {
+      font-weight: 600;
+    }
+
+    .countdown-ok {
+      color: var(--mdc-theme-secondary);
+    }
+
+    .countdown-warn {
+      color: #ff9800;
+    }
+
+    .countdown-crit {
+      color: var(--mdc-theme-error);
+    }
+
+    #adQuotaSummary {
+      background-color: var(--mdc-theme-surface);
+      border: 1px solid rgba(0, 0, 0, 0.12);
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 16px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    body.dark #adQuotaSummary {
+      border-color: rgba(255, 255, 255, 0.12);
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    .back-button {
+      display: inline-flex;
+      align-items: center;
+      text-decoration: none;
+      color: var(--mdc-theme-on-primary);
+      margin-right: 8px;
+    }
+  </style>
+</head>
+<body>
+  <!-- App Bar -->
+  <header class="app-bar">
+    <h1><i class="fas fa-store"></i> لوحة التحكم</h1>
+    <div class="user-actions">
+      <button id="themeToggleBtn" class="mdc-button">
+        <i id="themeIcon" class="material-icons">dark_mode</i>
+        <span id="themeLabel">الوضع الليلي</span>
+      </button>
+      <div id="loggedInUser" style="display: none;">
+        <span></span>
+        <button id="logoutBtn" class="mdc-button mdc-button--outlined">خروج</button>
+      </div>
+      <button id="loginBtn" class="mdc-button mdc-button--raised">تسجيل الدخول</button>
+    </div>
+  </header>
+
+  <!-- Fixed Status Bars -->
+  <div style="padding: 16px; padding-top: calc(var(--app-bar-height) + 16px);">
+    <div id="placeStatusBar" class="status-bar" style="display: none;">
+      <div class="status-content">
+        <span>حالة المكان:</span>
+        <div id="placeStatusButtons">
+          <button class="status-btn" data-status="مفتوح">مفتوح</button>
+          <button class="status-btn" data-status="مغلق">مغلق</button>
+          <button class="status-btn" data-status="مغلق للصلاة">مغلق للصلاة</button>
+          <button class="status-btn" data-status="تحت التجهيز">تحت التجهيز</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="subscriptionStatusBar" class="status-bar" style="display: none;">
+      <div class="status-content">
+        <div>
+          <div id="subscriptionTitle"></div>
+          <div id="subscriptionDetails"></div>
+        </div>
+        <div id="subscriptionCountdown" class="countdown"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <div class="mdc-layout-grid">
+      <div class="mdc-layout-grid__inner">
+        <div class="mdc-layout-grid__cell--span-12">
+          <!-- Navigation Tabs -->
+          <div style="display: flex; gap: 8px; margin-bottom: 16px; overflow-x: auto; padding-bottom: 8px;">
+            <button id="tab-places" class="mdc-button mdc-button--raised active" onclick="showTab('places')">
+              <i class="fas fa-map-marker-alt"></i> إدارة الأماكن
+            </button>
+            <button id="tab-ads" class="mdc-button" onclick="showTab('ads')" style="display: none;">
+              <i class="fas fa-ad"></i> إدارة الإعلانات
+            </button>
+            <button id="tab-packages" class="mdc-button" onclick="showTab('packages')">
+              <i class="fas fa-gift"></i> الباقات
+            </button>
+          </div>
+
+          <!-- Tab Contents -->
+          <div id="tab-places" class="tab-content active">
+            <form id="placeForm" class="mdc-card">
+              <div class="mdc-card__primary-action">
+                <h2>بيانات المكان</h2>
+
+                <div class="grid-2">
+                  <div class="input-field">
+                    <input type="text" name="placeName" required>
+                    <label>اسم المكان</label>
+                  </div>
+                  <div class="input-field">
+                    <select name="activityType" required></select>
+                    <label>نوع النشاط</label>
+                  </div>
+                </div>
+
+                <div class="grid-2">
+                  <div class="input-field">
+                    <select name="city" required></select>
+                    <label>المدينة</label>
+                  </div>
+                  <div class="input-field">
+                    <select name="area" required></select>
+                    <label>المنطقة</label>
+                  </div>
+                </div>
+
+                <div class="grid-2">
+                  <div class="input-field">
+                    <select name="location"></select>
+                    <label>الموقع أو المول</label>
+                  </div>
+                  <div class="input-field">
+                    <input type="text" name="detailedAddress" required>
+                    <label>العنوان التفصيلي</label>
+                  </div>
+                </div>
+
+                <div class="grid-2" style="align-items: end;">
+                  <div class="input-field">
+                    <input type="url" name="mapLink" placeholder="https://maps.google.com/...">
+                    <label>رابط الموقع على الخريطة</label>
+                  </div>
+                  <button id="autoLocateBtn" type="button" class="mdc-button">
+                    <i class="material-icons">my_location</i> استخدام موقعي الحالي
+                  </button>
+                </div>
+
+                <div class="grid-2">
+                  <div class="input-field">
+                    <input type="tel" name="phone" required>
+                    <label>رقم التواصل</label>
+                  </div>
+                  <div class="input-field">
+                    <input type="url" name="whatsappLink">
+                    <label>رابط واتساب</label>
+                  </div>
+                </div>
+
+                <div class="grid-2">
+                  <div class="input-field">
+                    <input type="email" name="email">
+                    <label>البريد الإلكتروني</label>
+                  </div>
+                  <div class="input-field">
+                    <input type="url" name="website">
+                    <label>الموقع الإلكتروني</label>
+                  </div>
+                </div>
+
+                <div class="grid-2">
+                  <div class="input-field">
+                    <input type="text" name="workingHours" placeholder="مثال: 9:00 ص - 10:00 م">
+                    <label>ساعات العمل</label>
+                  </div>
+                  <div class="input-field">
+                    <select name="delivery">
+                      <option value="">اختر</option>
+                      <option value="نعم">نعم</option>
+                      <option value="لا">لا</option>
+                    </select>
+                    <label>خدمات التوصيل</label>
+                  </div>
+                </div>
+
+                <div class="input-field">
+                  <textarea name="description"></textarea>
+                  <label>وصف مختصر</label>
+                </div>
+
+                <div class="input-field">
+                  <input id="placeImage" type="file" accept="image/*" onchange="previewImage(this,'placeImagePreview')">
+                  <label>صورة شعار أو صورة المكان</label>
+                  <div id="placeImagePreview" class="preview"></div>
+                </div>
+
+                <div class="grid-2">
+                  <div class="input-field">
+                    <input type="password" name="password" required>
+                    <label>كلمة المرور</label>
+                  </div>
+                  <div class="input-field">
+                    <select name="status">
+                      <option value="مفتوح">مفتوح</option>
+                      <option value="مغلق">مغلق</option>
+                      <option value="مغلق للصلاة">مغلق للصلاة</option>
+                      <option value="تحت التجهيز">تحت التجهيز</option>
+                    </select>
+                    <label>حالة المكان</label>
+                  </div>
+                </div>
+
+                <div class="actions">
+                  <button id="savePlaceBtn" type="submit" class="mdc-button mdc-button--raised">
+                    <i class="material-icons">save</i> حفظ بيانات المكان
+                  </button>
+                  <button id="goPackagesBtn" type="button" class="mdc-button" onclick="showTab('packages')">
+                    <i class="material-icons">redeem</i> الباقات
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+
+          <div id="tab-ads" class="tab-content">
+            <div id="adQuotaSummary"></div>
+            <div id="adQuotaNotice" style="display: none;"></div>
+
+            <form id="adForm" class="mdc-card">
+              <div class="mdc-card__primary-action">
+                <h2>إضافة/تعديل إعلان</h2>
+
+                <div class="grid-2">
+                  <div class="input-field">
+                    <select name="placeId" required></select>
+                    <label>المكان</label>
+                  </div>
+                  <div class="input-field">
+                    <select name="adType" required>
+                      <option value="">اختر نوع الإعلان</option>
+                      <option value="عرض خاص">عرض خاص</option>
+                      <option value="منتج جديد">منتج جديد</option>
+                      <option value="خدمة">خدمة</option>
+                      <option value="حدث">حدث</option>
+                      <option value="أخرى">أخرى</option>
+                    </select>
+                    <label>نوع الإعلان</label>
+                  </div>
+                </div>
+
+                <div class="input-field">
+                  <input type="text" name="adTitle" required>
+                  <label>عنوان الإعلان</label>
+                </div>
+
+                <div class="input-field">
+                  <textarea name="adDescription"></textarea>
+                  <label>وصف الإعلان</label>
+                </div>
+
+                <div class="grid-2">
+                  <div class="input-field">
+                    <input type="date" name="startDate">
+                    <label>تاريخ البداية</label>
+                  </div>
+                  <div class="input-field">
+                    <input type="date" name="endDate">
+                    <label>تاريخ النهاية</label>
+                  </div>
+                </div>
+
+                <div class="input-field">
+                  <input type="text" name="coupon">
+                  <label>كوبون خصم</label>
+                </div>
+
+                <div class="input-field">
+                  <input id="adImages" type="file" accept="image/*" multiple onchange="previewMultipleImages(this,'adImagesPreview')">
+                  <label>صور الإعلان (حتى 8)</label>
+                  <div id="adImagesPreview" class="preview"></div>
+                </div>
+
+                <div class="input-field">
+                  <input id="adVideo" type="file" accept="video/*" onchange="previewVideo(this,'adVideoPreview')">
+                  <label>فيديو (اختياري)</label>
+                  <div id="adVideoPreview" class="preview"></div>
+                </div>
+
+                <div class="grid-2">
+                  <div class="input-field">
+                    <select name="adActiveStatus">
+                      <option value="">اختر</option>
+                      <option value="نشط">نشط</option>
+                      <option value="غير نشط">غير نشط</option>
+                      <option value="مؤجل">مؤجل</option>
+                    </select>
+                    <label>حالة الإعلان</label>
+                  </div>
+                  <div class="input-field">
+                    <select name="adStatus">
+                      <option value="">اختر</option>
+                      <option value="مفتوح">مفتوح</option>
+                      <option value="مغلق">مغلق</option>
+                    </select>
+                    <label>الحالة العامة</label>
+                  </div>
+                </div>
+
+                <div class="actions">
+                  <button type="submit" class="mdc-button mdc-button--raised">
+                    <i class="material-icons">save</i> حفظ الإعلان
+                  </button>
+                </div>
+              </div>
+            </form>
+
+            <div id="adsListContainer" class="mdc-card" style="margin-top: 12px;"></div>
+          </div>
+
+          <div id="tab-packages" class="tab-content">
+            <div id="currentPackageCard" class="mdc-card" style="display: none;">
+              <div class="mdc-card__primary-action">
+                <h3>ملخص اشتراكك</h3>
+                <div id="currentPackageText"></div>
+                <div id="currentPackageCountdown" class="countdown"></div>
+              </div>
+            </div>
+
+            <div id="packagesGrid" class="grid-3"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Bottom Navigation -->
+  <nav class="bottom-nav">
+    <button class="bottom-nav-item active" onclick="showTab('places')">
+      <i class="fas fa-map-marker-alt"></i>
+      <span>الأماكن</span>
+    </button>
+    <button class="bottom-nav-item" onclick="showTab('ads')" id="adsTabLink" style="display: none;">
+      <i class="fas fa-ad"></i>
+      <span>الإعلانات</span>
+    </button>
+    <button class="bottom-nav-item" onclick="showTab('packages')">
+      <i class="fas fa-gift"></i>
+      <span>الباقات</span>
+    </button>
+  </nav>
+
+  <!-- Login Modal -->
+  <div id="loginModal" class="modal">
+    <div class="modal-content">
+      <h3>تسجيل الدخول</h3>
+      <form id="loginForm">
+        <div class="input-field">
+          <input type="text" name="phoneOrId" required>
+          <label>رقم الهاتف أو ID المكان</label>
+        </div>
+        <div class="input-field">
+          <input type="password" name="password" required>
+          <label>كلمة المرور</label>
+        </div>
+        <div class="actions">
+          <button type="button" id="loginCancel" class="mdc-button">إلغاء</button>
+          <button type="submit" class="mdc-button mdc-button--raised">دخول</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div id="loading">
+    <div class="spinner"></div>
+  </div>
+
+  <!-- Success/Error Alerts -->
+  <div id="successAlert" style="display: none; position: fixed; top: 20px; right: 20px; z-index: 1000;
+      background: rgba(16, 185, 129, 0.9); color: white; padding: 12px 16px; border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.2);">
+  </div>
+  <div id="errorAlert" style="display: none; position: fixed; top: 20px; right: 20px; z-index: 1000;
+      background: rgba(239, 68, 68, 0.9); color: white; padding: 12px 16px; border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.2);">
+  </div>
+
+  <script>
+    // متغيرات عامة
+    let currentPlace = null;
+    let currentAds = [];
+    let currentPackages = [];
+
+    // عند تحميل الصفحة
+    document.addEventListener('DOMContentLoaded', () => {
+      initTheme();
+      setupAuthUI();
+      checkLoginState();
+      setupPlaceStatusButtons();
+      setupTabNavigation();
+    });
+
+    // تهيئة الوضع الليلي/النهاري
+    function initTheme() {
+      const savedTheme = localStorage.getItem('theme');
+      if (savedTheme === 'dark') {
+        document.body.classList.add('dark');
+        document.getElementById('themeIcon').textContent = 'light_mode';
+        document.getElementById('themeLabel').textContent = 'الوضع النهاري';
+      }
+
+      document.getElementById('themeToggleBtn').addEventListener('click', () => {
+        document.body.classList.toggle('dark');
+        const isDark = document.body.classList.contains('dark');
+        localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        document.getElementById('themeIcon').textContent = isDark ? 'light_mode' : 'dark_mode';
+        document.getElementById('themeLabel').textContent = isDark ? 'الوضع النهاري' : 'الوضع الليلي';
+      });
+    }
+
+    // تهيئة واجهة المستخدم حسب حالة تسجيل الدخول
+    function setupAuthUI() {
+      document.getElementById('loginBtn').addEventListener('click', () => {
+        document.getElementById('loginModal').style.display = 'flex';
+      });
+
+      document.getElementById('loginCancel').addEventListener('click', () => {
+        document.getElementById('loginModal').style.display = 'none';
+      });
+
+      document.getElementById('loginForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        login();
+      });
+
+      document.getElementById('logoutBtn').addEventListener('click', logout);
+    }
+
+    // تسجيل الدخول
+    function login() {
+      const phoneOrId = document.querySelector('#loginForm [name="phoneOrId"]').value;
+      const password = document.querySelector('#loginForm [name="password"]').value;
+
+      showLoading();
+      // هنا يجب استبدال هذا بكود الاتصال بالـ API الحقيقي
+      setTimeout(() => {
+        hideLoading();
+        document.getElementById('loginModal').style.display = 'none';
+
+        // محاكاة نجاح تسجيل الدخول
+        const mockPlace = {
+          id: phoneOrId,
+          name: "مثال مكان",
+          phone: phoneOrId,
+          raw: {
+            "حالة المكان": "مفتوح",
+            "اشتراك": {
+              name: "باقة ذهبية",
+              endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+              features: ["10 إعلانات", "دعم 24/7", "مزايا إضافية"]
+            }
+          }
+        };
+
+        setLoggedPlace(mockPlace);
+        setLoggedInUI(mockPlace);
+        updateFixedStatusBars();
+        showSuccess('تم تسجيل الدخول بنجاح');
+
+        // عرض تبويب الإعلانات
+        document.getElementById('tab-ads').style.display = 'block';
+        document.getElementById('adsTabLink').style.display = 'flex';
+      }, 1500);
+    }
+
+    // تسجيل الخروج
+    function logout() {
+      localStorage.removeItem('loggedPlace');
+      setLoggedOutUI();
+      updateFixedStatusBars();
+      showSuccess('تم تسجيل الخروج بنجاح');
+    }
+
+    // التحقق من حالة تسجيل الدخول
+    function checkLoginState() {
+      const stored = getLoggedPlace();
+      if (stored && stored.id) {
+        setLoggedInUI(stored);
+      } else {
+        setLoggedOutUI();
+      }
+    }
+
+    // عرض واجهة المستخدم المسجل
+    function setLoggedInUI(place) {
+      document.getElementById('loggedInUser').style.display = 'flex';
+      document.getElementById('loggedInUser').querySelector('span').textContent = place.name || place.id;
+      document.getElementById('loginBtn').style.display = 'none';
+      document.getElementById('logoutBtn').style.display = 'block';
+    }
+
+    // عرض واجهة المستخدم غير المسجل
+    function setLoggedOutUI() {
+      document.getElementById('loggedInUser').style.display = 'none';
+      document.getElementById('loginBtn').style.display = 'block';
+      document.getElementById('logoutBtn').style.display = 'none';
+    }
+
+    // الحصول على بيانات المكان المسجل
+    function getLoggedPlace() {
+      const stored = localStorage.getItem('loggedPlace');
+      return stored ? JSON.parse(stored) : null;
+    }
+
+    // حفظ بيانات المكان المسجل
+    function setLoggedPlace(place) {
+      localStorage.setItem('loggedPlace', JSON.stringify(place));
+    }
+
+    // عرض تبويب معين
+    function showTab(tabId) {
+      // إخفاء جميع التابز
+      document.querySelectorAll('.tab-content').forEach(tab => {
+        tab.classList.remove('active');
+      });
+
+      // إظهار التاب المطلوب
+      document.getElementById(`tab-${tabId}`).classList.add('active');
+
+      // تحديث أزرار التنقل السفلية
+      document.querySelectorAll('.bottom-nav-item').forEach(item => {
+        item.classList.remove('active');
+        if (item.getAttribute('onclick') && item.getAttribute('onclick').includes(tabId)) {
+          item.classList.add('active');
+        }
+      });
+
+      // تحديث أزرار التنقل العلوية
+      document.querySelectorAll('[id^="tab-"]').forEach(btn => {
+        btn.classList.remove('mdc-button--raised', 'active');
+        if (btn.id === `tab-${tabId}`) {
+          btn.classList.add('mdc-button--raised', 'active');
+        }
+      });
+
+      // إذا كان التاب هو الإعلانات، قم بتحديث بيانات الحصة
+      if (tabId === 'ads') {
+        updateAdQuotaSummary();
+      }
+    }
+
+    // تهيئة أزرار التنقل بين التابز
+    function setupTabNavigation() {
+      const stored = getLoggedPlace();
+      if (stored && stored.id) {
+        document.getElementById('tab-ads').style.display = 'block';
+        document.getElementById('adsTabLink').style.display = 'flex';
+      }
+    }
+
+    // تهيئة أزرار حالة المكان
+    function setupPlaceStatusButtons() {
+      const buttons = document.querySelectorAll('#placeStatusButtons .status-btn');
+      buttons.forEach(btn => {
+        btn.addEventListener('click', () => {
+          const status = btn.getAttribute('data-status');
+          const logged = getLoggedPlace();
+
+          if (!logged || !logged.id) {
+            showError('يجب تسجيل الدخول أولاً');
+            return;
+          }
+
+          // تحديث الحالة محلياً أولاً
+          buttons.forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+
+          // إرسال التحديث للخادم (محاكاة)
+          showLoading();
+          setTimeout(() => {
+            hideLoading();
+            showSuccess('تم تحديث حالة المكان بنجاح');
+
+            // تحديث البيانات المحلية
+            const updatedPlace = getLoggedPlace() || {};
+            updatedPlace.raw = updatedPlace.raw || {};
+            updatedPlace.raw['حالة المكان'] = status;
+            setLoggedPlace(updatedPlace);
+          }, 1000);
+        });
+      });
+    }
+
+    // تحديث شريط حالة المكان والاشتراك
+    function updateFixedStatusBars() {
+      const logged = getLoggedPlace();
+      const placeStatusBar = document.getElementById('placeStatusBar');
+      const subscriptionStatusBar = document.getElementById('subscriptionStatusBar');
+      const adsTabLink = document.getElementById('adsTabLink');
+
+      if (logged && logged.id) {
+        if (placeStatusBar) placeStatusBar.style.display = 'block';
+        if (subscriptionStatusBar) subscriptionStatusBar.style.display = 'block';
+        if (adsTabLink) adsTabLink.style.display = 'flex';
+
+        // تحديث حالة المكان
+        if (logged.raw && logged.raw['حالة المكان']) {
+          updatePlaceStatusUI(logged.raw['حالة المكان']);
+        }
+
+        // تحديث حالة الاشتراك
+        refreshSubscriptionBar();
+      } else {
+        if (placeStatusBar) placeStatusBar.style.display = 'none';
+        if (subscriptionStatusBar) subscriptionStatusBar.style.display = 'none';
+        if (adsTabLink) adsTabLink.style.display = 'none';
+      }
+    }
+
+    // تحديث واجهة حالة المكان
+    function updatePlaceStatusUI(status) {
+      const buttons = document.querySelectorAll('#placeStatusButtons .status-btn');
+      buttons.forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.getAttribute('data-status') === status) {
+          btn.classList.add('active');
+        }
+      });
+    }
+
+    // تحديث شريط الاشتراك
+    function refreshSubscriptionBar() {
+      const logged = getLoggedPlace();
+      if (!logged || !logged.raw || !logged.raw['اشتراك']) return;
+
+      const subscription = logged.raw['اشتراك'];
+      const titleElement = document.getElementById('subscriptionTitle');
+      const detailsElement = document.getElementById('subscriptionDetails');
+      const countdownElement = document.getElementById('subscriptionCountdown');
+
+      if (titleElement) {
+        titleElement.textContent = subscription.name || 'باقة غير محددة';
+      }
+
+      if (detailsElement) {
+        detailsElement.textContent = subscription.features ? subscription.features.join(' • ') : '';
+      }
+
+      if (countdownElement && subscription.endDate) {
+        updateSubscriptionCountdown(subscription.endDate);
+      }
+    }
+
+    // تحديث عداد الاشتراك
+    function updateSubscriptionCountdown(endDate) {
+      const countdownElement = document.getElementById('subscriptionCountdown');
+      const currentPackageCountdown = document.getElementById('currentPackageCountdown');
+
+      if (!countdownElement && !currentPackageCountdown) return;
+
+      function updateCountdown(element) {
+        const now = new Date();
+        const end = new Date(endDate);
+        const diffTime = end - now;
+        const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+        const diffHours = Math.floor((diffTime % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+
+        let countdownClass = 'countdown-ok';
+        if (diffDays <= 3) countdownClass = 'countdown-crit';
+        else if (diffDays <= 7) countdownClass = 'countdown-warn';
+
+        if (element) {
+          element.textContent = `${diffDays} يوم و ${diffHours} ساعة`;
+          element.className = countdownClass;
+        }
+      }
+
+      if (countdownElement) updateCountdown(countdownElement);
+      if (currentPackageCountdown) updateCountdown(currentPackageCountdown);
+
+      // تحديث كل دقيقة
+      setInterval(() => {
+        if (countdownElement) updateCountdown(countdownElement);
+        if (currentPackageCountdown) updateCountdown(currentPackageCountdown);
+      }, 60000);
+    }
+
+    // تحديث ملخص حصة الإعلانات
+    function updateAdQuotaSummary() {
+      const logged = getLoggedPlace();
+      if (!logged || !logged.id) return;
+
+      const quotaSummary = document.getElementById('adQuotaSummary');
+      const quotaNotice = document.getElementById('adQuotaNotice');
+
+      if (!quotaSummary) return;
+
+      // محاكاة بيانات الحصة
+      const mockQuota = {
+        usedAds: 3,
+        totalAds: 10
+      };
+
+      const used = mockQuota.usedAds || 0;
+      const total = mockQuota.totalAds || 0;
+      const remaining = total - used;
+
+      quotaSummary.innerHTML = `
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <div style="font-weight: 600;">حصة الإعلانات:</div>
+            <div style="color: var(--mdc-theme-text-secondary-on-background);">
+              ${used} من ${total} إعلانات مستخدمة
+            </div>
+          </div>
+          <div style="font-weight: 700; ${remaining <= 0 ? 'color: var(--mdc-theme-error)' : ''}">
+            ${remaining} متاحة
+          </div>
+        </div>
+        <div style="margin-top: 8px; height: 6px; background: rgba(0,0,0,0.12); border-radius: 3px; overflow: hidden;">
+          <div style="height: 100%; width: ${(used / total) * 100}%; background: ${remaining <= 0 ? 'var(--mdc-theme-error)' : 'var(--mdc-theme-primary)'};"></div>
+        </div>
+      `;
+
+      if (remaining <= 0) {
+        if (quotaNotice) {
+          quotaNotice.style.display = 'block';
+          quotaNotice.innerHTML = `
+            <div style="background: rgba(239, 68, 68, 0.12); color: var(--mdc-theme-error);
+                padding: 10px; border-radius: 4px; margin-bottom: 12px; font-size: 0.9rem;">
+              <i class="material-icons" style="font-size: 1rem; margin-inline-end: 6px;">warning</i>
+              لقد استهلكت جميع حصة إعلاناتك. يرجى تحديث اشتراكك للحصول على المزيد.
+            </div>
+          `;
+        }
+      } else if (quotaNotice) {
+        quotaNotice.style.display = 'none';
+      }
+    }
+
+    // معاينة صورة واحدة
+    function previewImage(input, previewId) {
+      const preview = document.getElementById(previewId);
+      preview.innerHTML = '';
+
+      if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const img = document.createElement('img');
+          img.src = e.target.result;
+          preview.appendChild(img);
+        };
+        reader.readAsDataURL(input.files[0]);
+      }
+    }
+
+    // معاينة صور متعددة
+    function previewMultipleImages(input, previewId) {
+      const preview = document.getElementById(previewId);
+      preview.innerHTML = '';
+
+      if (input.files) {
+        Array.from(input.files).forEach(file => {
+          const reader = new FileReader();
+          reader.onload = function(e) {
+            const img = document.createElement('img');
+            img.src = e.target.result;
+            preview.appendChild(img);
+          };
+          reader.readAsDataURL(file);
+        });
+      }
+    }
+
+    // معاينة فيديو
+    function previewVideo(input, previewId) {
+      const preview = document.getElementById(previewId);
+      preview.innerHTML = '';
+
+      if (input.files && input.files[0]) {
+        const video = document.createElement('video');
+        video.controls = true;
+        video.style.maxWidth = '100%';
+        video.style.maxHeight = '200px';
+        video.src = URL.createObjectURL(input.files[0]);
+        preview.appendChild(video);
+      }
+    }
+
+    // عرض رسالة نجاح
+    function showSuccess(message) {
+      const alert = document.getElementById('successAlert');
+      alert.textContent = message;
+      alert.style.display = 'block';
+      setTimeout(() => {
+        alert.style.display = 'none';
+      }, 3000);
+    }
+
+    // عرض رسالة خطأ
+    function showError(message) {
+      const alert = document.getElementById('errorAlert');
+      alert.textContent = message;
+      alert.style.display = 'block';
+      setTimeout(() => {
+        alert.style.display = 'none';
+      }, 3000);
+    }
+
+    // عرض شاشة التحميل
+    function showLoading() {
+      document.getElementById('loading').style.display = 'flex';
+    }
+
+    // إخفاء شاشة التحميل
+    function hideLoading() {
+      document.getElementById('loading').style.display = 'none';
+    }
+
+    // محاكاة الاتصال بالـ API
+    function apiPost(data) {
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          resolve({
+            ok: true,
+            data: {
+              success: true,
+              message: "نجاح",
+              data: {}
+            }
+          });
+        }, 1000);
+      });
+    }
+
+    // تهيئة نموذج المكان
+    document.getElementById('placeForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      showLoading();
+
+      // جمع بيانات النموذج
+      const formData = new FormData(this);
+
+      // محاكاة حفظ البيانات
+      setTimeout(() => {
+        hideLoading();
+        showSuccess('تم حفظ بيانات المكان بنجاح');
+
+        // تحديث بيانات المكان المحلية
+        const logged = getLoggedPlace() || {};
+        logged.name = formData.get('placeName');
+        logged.phone = formData.get('phone');
+        logged.raw = logged.raw || {};
+        logged.raw['حالة المكان'] = formData.get('status');
+        setLoggedPlace(logged);
+
+        // تحديث واجهة المستخدم
+        setLoggedInUI(logged);
+        updateFixedStatusBars();
+      }, 1500);
+    });
+
+    // تهيئة نموذج الإعلان
+    document.getElementById('adForm')?.addEventListener('submit', function(e) {
+      e.preventDefault();
+      showLoading();
+
+      // جمع بيانات النموذج
+      const formData = new FormData(this);
+
+      // محاكاة حفظ البيانات
+      setTimeout(() => {
+        hideLoading();
+        showSuccess('تم حفظ الإعلان بنجاح');
+        updateAdQuotaSummary();
+      }, 1500);
+    });
+  </script>
+</body>
+</html>
 
 
 
