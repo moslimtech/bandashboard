@@ -8172,6 +8172,35 @@ async function loadLookupsAndPopulate() {
       if (stored.id) { checkAdQuotaAndToggle(stored.id); loadAdsForPlace(stored.id); }
     }
 
+
+    // عرض/إخفاء تبويب "الإعلانات" بناءً على حالة تسجيل الدخول
+    function updateAdsTabVisibility() {
+      const adsTabBtn = document.getElementById('tab-btn-ads');
+      const adsPanel = document.getElementById('tab-ads');
+      const logged = getLoggedPlace();
+    
+      // إظهار زر التبويب أو إخفاؤه
+      if (adsTabBtn) {
+        adsTabBtn.style.display = (logged && logged.id) ? 'inline-flex' : 'none';
+      }
+    
+      // إظهار محتوى التبويب أو إخفاؤه
+      if (adsPanel) {
+        // نستخدم class "active" لإبقاء التوافق مع showTab
+        if (logged && logged.id) {
+          // إذا كان مخفي، تركه مرئياً (لا نفعّل التبويب تلقائياً)
+          adsPanel.style.display = 'block';
+        } else {
+          adsPanel.style.display = 'none';
+        }
+      }
+    
+      // لو التبويب الحالي هو الإعلانات وكان المستخدم غير مسجّل، نرجع لتبويب الأماكن
+      if ((!logged || !logged.id) && currentTab === 'ads') {
+        showTab('places');
+      }
+    }
+
     updateAdsTabVisibility();
     await refreshSubscriptionBar();
     await loadPlacesForAds();
