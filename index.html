@@ -2356,14 +2356,7 @@
                             <option value="مؤجل">مؤجل</option>
                         </select>
                     </div>
-                    <div class="form-group">
-                        <label for="adStatus">الحالة العامة</label>
-                        <select name="adStatus" id="adStatus" class="form-control">
-                            <option value="">اختر الحالة</option>
-                            <option value="مفتوح">مفتوح</option>
-                            <option value="مغلق">مغلق</option>
-                        </select>
-                    </div>
+                   
                 </div>
 
                 <div class="form-group">
@@ -2485,7 +2478,7 @@
             button.classList.remove('btn-activate', 'btn-active', 'btn-pending', 'btn-expired', 'btn-trial-used');
 
             switch (status) {
-                case 'نشطة':
+                case 'مفعلة':
                     card.classList.add('active');
                     button.classList.add('btn-active');
                     button.textContent = '✓ مُفعّلة حالياً';
