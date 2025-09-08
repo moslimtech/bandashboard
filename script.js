@@ -1976,75 +1976,264 @@ function previewImage(input, previewId) {
   const preview = document.getElementById(previewId);
   if (!preview) return;
   preview.innerHTML = '';
-  if (input.files && input.files) {
-    const file = input.files;
+  
+  // ✅ التحقق الصحيح من وجود الملف الأول
+  if (input.files && input.files.length > 0 && input.files) {
+    const file = input.files; // ✅ أخذ الملف الأول من FileList
+    
+    // التحقق من نوع الملف
+    if (!file.type.startsWith('image/')) {
+      showError('يرجى اختيار ملف صورة صحيح');
+      return;
+    }
+    
     const reader = new FileReader();
     reader.onload = e => {
-      const img = document.createElement('img'); img.src = e.target.result; img.style.borderRadius = '8px';
-      preview.appendChild(img); uploadedImages = [file];
+      const img = document.createElement('img'); 
+      img.src = e.target.result; 
+      img.style.borderRadius = '8px';
+      img.style.maxWidth = '100%';
+      img.style.height = 'auto';
+      preview.appendChild(img); 
+      uploadedImages = [file]; // ✅ حفظ File object الصحيح
     };
-    reader.readAsDataURL(file);
+    
+    reader.onerror = () => {
+      showError('خطأ في قراءة ملف الصورة');
+    };
+    
+    reader.readAsDataURL(file); // ✅ تمرير File object وليس FileList
   }
 }
+
 function previewMultipleImages(input, previewId) {
   const preview = document.getElementById(previewId);
   if (!preview) return;
-  preview.innerHTML = ''; uploadedImages = [];
-  if (!input.files) return;
+  preview.innerHTML = ''; 
+  uploadedImages = [];
+  
+  if (!input.files || input.files.length === 0) return;
+  
   const files = Array.from(input.files).slice(0, 8);
-  if (input.files.length > 8) showError('يمكن تحميل حتى 8 صور كحد أقصى. سيتم أخذ أول 8 صور.');
+  if (input.files.length > 8) {
+    showError('يمكن تحميل حتى 8 صور كحد أقصى. سيتم أخذ أول 8 صور.');
+  }
+  
   files.forEach((file) => {
+    // التحقق من نوع الملف
+    if (!file.type.startsWith('image/')) {
+      showError(`الملف ${file.name} ليس صورة صحيحة`);
+      return;
+    }
+    
     const reader = new FileReader();
     reader.onload = e => {
-      const div = document.createElement('div'); div.className = 'preview-image';
-      const img = document.createElement('img'); img.src = e.target.result;
-      const removeBtn = document.createElement('button'); removeBtn.className = 'remove-image'; removeBtn.innerHTML = '×';
-      removeBtn.onclick = () => { div.remove(); uploadedImages = uploadedImages.filter(f => f !== file); };
-      div.appendChild(img); div.appendChild(removeBtn); preview.appendChild(div);
+      const div = document.createElement('div'); 
+      div.className = 'preview-image';
+      
+      const img = document.createElement('img'); 
+      img.src = e.target.result;
+      img.style.maxWidth = '100%';
+      img.style.height = 'auto';
+      
+      const removeBtn = document.createElement('button'); 
+      removeBtn.className = 'remove-image'; 
+      removeBtn.innerHTML = '×';
+      removeBtn.onclick = () => { 
+        div.remove(); 
+        uploadedImages = uploadedImages.filter(f => f !== file); 
+      };
+      
+      div.appendChild(img); 
+      div.appendChild(removeBtn); 
+      preview.appendChild(div);
       uploadedImages.push(file);
     };
-    reader.readAsDataURL(file);
+    
+    reader.onerror = () => {
+      showError(`خطأ في قراءة الملف: ${file.name}`);
+    };
+    
+    reader.readAsDataURL(file); // ✅ file هو File object صحيح
   });
 }
+
 function previewVideo(input, previewId) {
   const preview = document.getElementById(previewId);
   if (!preview) return;
-  preview.innerHTML = ''; uploadedVideos = [];
-  if (input.files && input.files) {
-    const file = input.files; const reader = new FileReader();
-    reader.onload = e => { const video = document.createElement('video'); video.src = e.target.result; video.controls = true; video.style.width = '100%'; preview.appendChild(video); uploadedVideos = [file]; };
-    reader.readAsDataURL(file);
+  preview.innerHTML = ''; 
+  uploadedVideos = [];
+  
+  // ✅ التحقق الصحيح من وجود الملف الأول
+  if (input.files && input.files.length > 0 && input.files) {
+    const file = input.files; // ✅ أخذ الملف الأول من FileList
+    
+    // التحقق من نوع الملف
+    if (!file.type.startsWith('video/')) {
+      showError('يرجى اختيار ملف فيديو صحيح');
+      return;
+    }
+    
+    const reader = new FileReader();
+    reader.onload = e => { 
+      const video = document.createElement('video'); 
+      video.src = e.target.result; 
+      video.controls = true; 
+      video.style.width = '100%';
+      video.style.maxHeight = '300px';
+      preview.appendChild(video); 
+      uploadedVideos = [file]; // ✅ حفظ File object الصحيح
+    };
+    
+    reader.onerror = () => {
+      showError('خطأ في قراءة ملف الفيديو');
+    };
+    
+    reader.readAsDataURL(file); // ✅ تمرير File object وليس FileList
   }
 }
 
 /* ========== Upload helper ========== */
 async function readFileAsBase64(file) {
+  // ✅ التحقق من نوع المعامل
+  if (!(file instanceof File) && !(file instanceof Blob)) {
+    throw new Error('المعامل يجب أن يكون من نوع File أو Blob');
+  }
+  
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
-    reader.onload = () => { const result = reader.result; const base64 = String(result).split(',')[1] || ''; resolve(base64); };
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
+    
+    reader.onload = () => { 
+      const result = reader.result; 
+      const base64 = String(result).split(',')[1] || ''; 
+      resolve(base64); 
+    };
+    
+    reader.onerror = (error) => {
+      console.error('خطأ في قراءة الملف:', error);
+      reject(new Error('فشل في قراءة الملف كـ base64'));
+    };
+    
+    reader.readAsDataURL(file); // ✅ file محقق من صحته
   });
 }
+
 async function uploadToGoogleDrive(file, folder, placeId = null) {
-  if (!API_URL || !API_URL.startsWith('http')) return `https://drive.google.com/file/d/${Math.random().toString(36).substr(2, 9)}/view`;
-  const base64 = await readFileAsBase64(file);
-  const form = new FormData();
-  form.append('action', 'uploadFile');
-  form.append('folder', folder);
-  form.append('fileName', file.name);
-  form.append('mimeType', file.type || 'application/octet-stream');
-  form.append('fileData', base64);
-  if (placeId) form.append('placeId', placeId);
-  const resp = await apiPost(form);
-  if (!resp.ok) throw new Error('فشل رفع الملف');
-  const data = resp.data;
-  const up = (data && data.data) ? data.data : data;
-  const fileUrl = (up && (up.fileUrl || up.url)) || (resp && resp.fileUrl) || '';
-  if (fileUrl) recentUploads[file.name] = { url: fileUrl, name: file.name };
-  if (!fileUrl) throw new Error('تعذر استخراج رابط الملف من استجابة الخادم');
-  return fileUrl;
+  // التحقق من صحة الملف
+  if (!file || !(file instanceof File)) {
+    throw new Error('ملف غير صحيح للرفع');
+  }
+  
+  if (!API_URL || !API_URL.startsWith('http')) {
+    return `https://drive.google.com/file/d/${Math.random().toString(36).substr(2, 9)}/view`;
+  }
+  
+  try {
+    const base64 = await readFileAsBase64(file);
+    const form = new FormData();
+    form.append('action', 'uploadFile');
+    form.append('folder', folder);
+    form.append('fileName', file.name);
+    form.append('mimeType', file.type || 'application/octet-stream');
+    form.append('fileData', base64);
+    if (placeId) form.append('placeId', placeId);
+    
+    const resp = await apiPost(form);
+    if (!resp.ok) throw new Error('فشل رفع الملف');
+    
+    const data = resp.data;
+    const up = (data && data.data) ? data.data : data;
+    const fileUrl = (up && (up.fileUrl || up.url)) || (resp && resp.fileUrl) || '';
+    
+    if (fileUrl) {
+      recentUploads[file.name] = { url: fileUrl, name: file.name };
+    }
+    
+    if (!fileUrl) {
+      throw new Error('تعذر استخراج رابط الملف من استجابة الخادم');
+    }
+    
+    return fileUrl;
+  } catch (error) {
+    console.error('خطأ في رفع الملف:', error);
+    throw error;
+  }
 }
+
+// /* ========== Previews ========== */
+// function previewImage(input, previewId) {
+//   const preview = document.getElementById(previewId);
+//   if (!preview) return;
+//   preview.innerHTML = '';
+//   if (input.files && input.files) {
+//     const file = input.files;
+//     const reader = new FileReader();
+//     reader.onload = e => {
+//       const img = document.createElement('img'); img.src = e.target.result; img.style.borderRadius = '8px';
+//       preview.appendChild(img); uploadedImages = [file];
+//     };
+//     reader.readAsDataURL(file);
+//   }
+// }
+// function previewMultipleImages(input, previewId) {
+//   const preview = document.getElementById(previewId);
+//   if (!preview) return;
+//   preview.innerHTML = ''; uploadedImages = [];
+//   if (!input.files) return;
+//   const files = Array.from(input.files).slice(0, 8);
+//   if (input.files.length > 8) showError('يمكن تحميل حتى 8 صور كحد أقصى. سيتم أخذ أول 8 صور.');
+//   files.forEach((file) => {
+//     const reader = new FileReader();
+//     reader.onload = e => {
+//       const div = document.createElement('div'); div.className = 'preview-image';
+//       const img = document.createElement('img'); img.src = e.target.result;
+//       const removeBtn = document.createElement('button'); removeBtn.className = 'remove-image'; removeBtn.innerHTML = '×';
+//       removeBtn.onclick = () => { div.remove(); uploadedImages = uploadedImages.filter(f => f !== file); };
+//       div.appendChild(img); div.appendChild(removeBtn); preview.appendChild(div);
+//       uploadedImages.push(file);
+//     };
+//     reader.readAsDataURL(file);
+//   });
+// }
+// function previewVideo(input, previewId) {
+//   const preview = document.getElementById(previewId);
+//   if (!preview) return;
+//   preview.innerHTML = ''; uploadedVideos = [];
+//   if (input.files && input.files) {
+//     const file = input.files; const reader = new FileReader();
+//     reader.onload = e => { const video = document.createElement('video'); video.src = e.target.result; video.controls = true; video.style.width = '100%'; preview.appendChild(video); uploadedVideos = [file]; };
+//     reader.readAsDataURL(file);
+//   }
+// }
+
+// /* ========== Upload helper ========== */
+// async function readFileAsBase64(file) {
+//   return new Promise((resolve, reject) => {
+//     const reader = new FileReader();
+//     reader.onload = () => { const result = reader.result; const base64 = String(result).split(',')[1] || ''; resolve(base64); };
+//     reader.onerror = reject;
+//     reader.readAsDataURL(file);
+//   });
+// }
+// async function uploadToGoogleDrive(file, folder, placeId = null) {
+//   if (!API_URL || !API_URL.startsWith('http')) return `https://drive.google.com/file/d/${Math.random().toString(36).substr(2, 9)}/view`;
+//   const base64 = await readFileAsBase64(file);
+//   const form = new FormData();
+//   form.append('action', 'uploadFile');
+//   form.append('folder', folder);
+//   form.append('fileName', file.name);
+//   form.append('mimeType', file.type || 'application/octet-stream');
+//   form.append('fileData', base64);
+//   if (placeId) form.append('placeId', placeId);
+//   const resp = await apiPost(form);
+//   if (!resp.ok) throw new Error('فشل رفع الملف');
+//   const data = resp.data;
+//   const up = (data && data.data) ? data.data : data;
+//   const fileUrl = (up && (up.fileUrl || up.url)) || (resp && resp.fileUrl) || '';
+//   if (fileUrl) recentUploads[file.name] = { url: fileUrl, name: file.name };
+//   if (!fileUrl) throw new Error('تعذر استخراج رابط الملف من استجابة الخادم');
+//   return fileUrl;
+// }
 
 /* ========== Place submit ========== */
 async function handlePlaceSubmit(ev) {
@@ -3209,7 +3398,7 @@ async function refreshPackageUIFromDashboard() {
 
     // حالات أخرى
     clearPackageCountdown();
-    if (btn) { btn.disabled = false; btn.style.opacity = '1'; btn.textContent = (pkgStatus.indexOf('منته') !== -1) ? 'تجديد الاشتراك' : 'تفعيل الاشتراك'; }
+    if (btn) { btn.disabled = false; btn.style.opacity = '1'; btn.textContent = (pkgStatus.indexOf('منتهية') !== -1) ? 'تجديد الاشتراك' : 'تفعيل الاشتراك'; }
     if (hint) hint.textContent = `حالة الباقة: ${pkgStatus}`;
     [card, inlineCard].forEach(c => { if (c) c.style.display = 'block'; });
     const pn = packageName || (pkgId ? `ID ${pkgId}` : 'غير معروفة');
