@@ -915,7 +915,7 @@ async function choosePackageAPI(packageId) {
         place.raw['تاريخ بداية الاشتراك'] = returned.start;
         place.raw['تاريخ نهاية الاشتراك'] = returned.end;
         place.raw['الباقة'] = packageId;
-        place.raw['حالة الباقة'] = 'نشطة';
+        place.raw['حالة الباقة'] = 'مفعلة';
         if (returned.trialActivated) place.raw['حالة الباقة التجريبية'] = 'true';
         setLoggedPlace(place);
       }
@@ -1415,9 +1415,9 @@ async function refreshPackageUIFromDashboard() {
       return;
     }
 
-    if (pkgStatus === 'نشطة') {
+    if (pkgStatus === 'مفعلة') {
       if (btn) { btn.disabled = true; btn.style.opacity = '0.8'; btn.textContent = 'الاشتراك مُفعّل'; }
-      let msg = 'حالة الباقة: نشطة';
+      let msg = 'حالة الباقة: مفعلة';
       if (startDate && endDate) {
         const sTxt = startDate.toISOString().split('T')[0];
         const eTxt = endDate.toISOString().split('T')[0];
@@ -1630,7 +1630,7 @@ function updateInlinePackageInfoCard(place) {
       return;
     }
 
-    if (pkgStatus === 'نشطة') {
+    if (pkgStatus === 'مفعلة') {
       const today = new Date();
       let remaining = (startDate && endDate) ? daysBetween(today, endDate) : null;
       if (remaining !== null && remaining < 0) remaining = 0;
