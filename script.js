@@ -9,6 +9,19 @@ let editingAdId = null;
 const recentUploads = {};
 const THEME_KEY = 'ban_theme';
 
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// دالة جديدة لمعالجة التواريخ بشكل آمن
+function formatDateSafe(date) {
+  if (!date || !(date instanceof Date) || isNaN(date.getTime())) {
+    return '';
+  }
+  return date.formatDateSafe().split('T')[0];
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 /* ========== Theme ========== */
 function applyTheme(theme) {
   if (theme === 'dark') {
@@ -98,12 +111,12 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function initializeApp() {
-  const today = new Date().toISOString().split('T')[0];
+  const today = new Date().formatDateSafe().split('T')[0];
   const startInput = document.querySelector('input[name="startDate"]');
   const endInput = document.querySelector('input[name="endDate"]');
   if (startInput) startInput.value = today;
   const nextWeek = new Date(); nextWeek.setDate(nextWeek.getDate() + 7);
-  if (endInput) endInput.value = nextWeek.toISOString().split('T')[0];
+  if (endInput) endInput.value = nextWeek.formatDateSafe().split('T')[0];
 }
 
 /* ========== Event listeners ========== */
@@ -1433,7 +1446,7 @@ updateInlinePackageInfoCard = function(place) {
             const pn = packageName || (pkgId ? `ID ${pkgId}` : 'غير معروفة');
             
             // إصلاح هنا - التحقق من صلاحية التاريخ
-            const eTxt = (endDate && !isNaN(endDate.getTime())) ? endDate.toISOString().split('T')[0] : '';
+            const eTxt = (endDate && !isNaN(endDate.getTime())) ? endDate.formatDateSafe().split('T')[0] : '';
             text.textContent = `باقتك الحالية: ${pn}${eTxt ? ` — تنتهي في ${eTxt}` : ''}${remaining !== null ? ` — المتبقي ${remaining} يوم` : ''}`;
             card.style.display = 'block';
 
@@ -1493,7 +1506,9 @@ function initMapAutoLocate() {
   if (btn) {
     btn.addEventListener('click', async () => {
       btn.disabled = true; const old = btn.textContent; btn.textContent = 'جاري تحديد الموقع...';
-      await attemptAutoLocate(true);
+      //await attemptAutoLocate(true);
+      try { if (typeof attemptAutoLocate === 'function') attemptAutoLocate(false); } catch(e) {}
+      
       btn.disabled = false; btn.textContent = old;
     });
   }
@@ -1656,15 +1671,16 @@ async function refreshPackageUIFromDashboard() {
       if (btn) { btn.disabled = true; btn.style.opacity = '0.8'; btn.textContent = 'الاشتراك مُفعّل'; }
       let msg = 'حالة الباقة: مفعلة';
       if (startDate && endDate) {
-        const sTxt = startDate.toISOString().split('T')[0];
-        const eTxt = endDate.toISOString().split('T')[0];
+        const sTxt = startDate.formatDateSafe().split('T')[0];
+        const eTxt = formatDateSafe(endDate)
+        //endDate.toISOString().split('T')[0];
         msg += ` — البداية: ${sTxt} · النهاية: ${eTxt}${remaining !== null ? ` · المتبقي: ${remaining} يوم` : ''}`;
       }
       if (hint) { hint.textContent = msg; hint.classList.add('active'); }
 
       [card, inlineCard].forEach(c => { if (c) c.style.display = 'block'; });
       const pn = packageName || (pkgId ? `ID ${pkgId}` : 'غير معروفة');
-      const eTxt = endDate ? endDate.toISOString().split('T')[0] : '';
+      const eTxt = endDate ? formatDateSafe(endDate) : '';
       const remTxt = remaining !== null ? ` — المتبقي ${remaining} يوم` : '';
       if (cardText) cardText.textContent = `باقتك الحالية: ${pn}${eTxt ? ` — تنتهي في ${eTxt}` : ''}${remTxt}`;
       if (inlineText) inlineText.textContent = `باقتك الحالية: ${pn}${eTxt ? ` — تنتهي في ${eTxt}` : ''}${remTxt}`;
@@ -1697,14 +1713,16 @@ async function refreshPackageUIFromDashboard() {
       if (btn) { btn.disabled = false; btn.style.opacity = '1'; btn.textContent = 'تجديد الاشتراك'; }
       let msg = 'حالة الباقة: منتهية';
       if (startDate && endDate) {
-        const sTxt = startDate.toISOString().split('T')[0];
-        const eTxt = endDate.toISOString().split('T')[0];
+        //const sTxt = startDate.toISOString().split('T')[0];
+        const sTxt = startDate.formatDateSafe().split('T')[0];
+        const eTxt = formatDateSafe(endDate)
+        //endDate.toISOString().split('T')[0];
         msg += ` — البداية: ${sTxt} · النهاية: ${eTxt}`;
       }
       if (hint) { hint.textContent = msg; hint.classList.add('expired'); }
       [card, inlineCard].forEach(c => { if (c) c.style.display = 'block'; });
       const pn = packageName || (pkgId ? `ID ${pkgId}` : 'غير معروفة');
-      const eTxt = endDate ? endDate.toISOString().split('T')[0] : '';
+      const eTxt = endDate ? endDate.formatDateSafe().split('T')[0] : '';
       if (cardText) cardText.textContent = `باقتك الحالية: ${pn} — الحالة: منتهية${eTxt ? ` — انتهت في ${eTxt}` : ''}`;
       if (inlineText) inlineText.textContent = `باقتك الحالية: ${pn} — الحالة: منتهية${eTxt ? ` — انتهت في ${eTxt}` : ''}`;
       return;
@@ -1872,7 +1890,7 @@ function updateInlinePackageInfoCard(place) {
       let remaining = (startDate && endDate) ? daysBetween(today, endDate) : null;
       if (remaining !== null && remaining < 0) remaining = 0;
       const pn = packageName || (pkgId ? `ID ${pkgId}` : 'غير معروفة');
-      const eTxt = endDate ? endDate.toISOString().split('T')[0] : '';
+      const eTxt = endDate ? endDate.formatDateSafe().split('T')[0] : '';
       text.textContent = `باقتك الحالية: ${pn}${eTxt ? ` — تنتهي في ${eTxt}` : ''}${remaining !== null ? ` — المتبقي ${remaining} يوم` : ''}`;
       card.style.display = 'block';
 
@@ -1903,7 +1921,7 @@ function updateInlinePackageInfoCard(place) {
 
     if (pkgStatus === 'منتهية') {
       const pn = packageName || (pkgId ? `ID ${pkgId}` : 'غير معروفة');
-      const eTxt = endDate ? endDate.toISOString().split('T')[0] : '';
+      const eTxt = endDate ? endDate.formatDateSafe().split('T')[0] : '';
       text.textContent = `باقتك الحالية: ${pn} — الحالة: منتهية${eTxt ? ` — انتهت في ${eTxt}` : ''}`;
       card.style.display = 'block';
       return;
