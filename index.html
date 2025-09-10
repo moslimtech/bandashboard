@@ -1332,11 +1332,69 @@
             });
         }
 
-        // استدعاء التحديث عند تحميل الصفحة
-        document.addEventListener('DOMContentLoaded', () => {
-            // انتظار قليل لضمان تحميل script.js
-            setTimeout(refreshAllPackageCards, 500);
+        // // استدعاء التحديث عند تحميل الصفحة
+        // document.addEventListener('DOMContentLoaded', () => {
+        //     // انتظار قليل لضمان تحميل script.js
+        //     setTimeout(refreshAllPackageCards, 500);
+        // });
+        ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // انتظار تحميل script.js ثم تشغيل الدوال
+            setTimeout(function() {
+                if (typeof refreshAllPackageCards !== 'undefined') {
+                    refreshAllPackageCards();
+                }
+                if (typeof refreshPackageUIFromDashboard !== 'undefined') {
+                    refreshPackageUIFromDashboard();
+                }
+            }, 1000);
         });
+
+
+        ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+        ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+        // دالة للحصول على المكان المسجل
+    function getLoggedPlace() {
+        try {
+            const raw = localStorage.getItem('khedmatak_place');
+            return raw ? JSON.parse(raw) : null;
+        } catch (e) {
+            return null;
+        }
+    }
+
+    // دالة مساعدة للتحقق من وجود دالة
+    function isFunction(functionToCheck) {
+        return functionToCheck && {}.toString.call(functionToCheck) === '[object Function]';
+    }
+
+    // دالة لتحديث حالة الزر بناءً على سعر الباقة
+    function updateButtonBasedOnPrice(button, price, isTrialUsed) {
+        if (price === '0' && isTrialUsed) {
+            button.classList.add('btn-trial-used');
+            button.textContent = '❌ تم استخدامها سابقاً';
+            button.disabled = true;
+        } else if (price === '0') {
+            button.classList.add('btn-activate');
+            button.textContent = '🚀 تفعيل تجريبي مجاني';
+            button.disabled = false;
+        } else {
+            button.classList.add('btn-activate');
+            button.textContent = '💳 اختر هذه الباقة';
+            button.disabled = false;
+        }
+    }
+
+        ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
     </script>
     <script src="script.js"></script>
 </body>
