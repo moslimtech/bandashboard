@@ -9,19 +9,6 @@ let editingAdId = null;
 const recentUploads = {};
 const THEME_KEY = 'ban_theme';
 
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-// دالة جديدة لمعالجة التواريخ بشكل آمن
-function formatDateSafe(date) {
-  if (!date || !(date instanceof Date) || isNaN(date.getTime())) {
-    return '';
-  }
-  return date.formatDateSafe().split('T')[0];
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 /* ========== Theme ========== */
 function applyTheme(theme) {
   if (theme === 'dark') {
@@ -111,12 +98,12 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function initializeApp() {
-  const today = new Date().formatDateSafe().split('T')[0];
+  const today = new Date().toISOString().split('T')[0];
   const startInput = document.querySelector('input[name="startDate"]');
   const endInput = document.querySelector('input[name="endDate"]');
   if (startInput) startInput.value = today;
   const nextWeek = new Date(); nextWeek.setDate(nextWeek.getDate() + 7);
-  if (endInput) endInput.value = nextWeek.formatDateSafe().split('T')[0];
+  if (endInput) endInput.value = nextWeek.toISOString().split('T')[0];
 }
 
 /* ========== Event listeners ========== */
@@ -1355,132 +1342,29 @@ function initMapLinkAutoFill() {
 }
 
 function buildGoogleMapsLink(lat, lng) { return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(lat + ',' + lng)}`; }
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// async function handlePositionAndFill(lat, lng) {
-//   try {
-//     const mapEl = document.querySelector('input[name="mapLink"]') || document.getElementById('mapLinkInput');
-//     if (mapEl) {
-//       mapEl.value = buildGoogleMapsLink(lat, lng);
-//       try { mapEl.dispatchEvent(new Event('input', { bubbles: true })); } catch(e){}
-//       try { mapEl.dispatchEvent(new Event('change', { bubbles: true })); } catch(e){}
-//     }
-//     const msgEl = document.getElementById('placeStatusMessage'); if (msgEl) msgEl.textContent = `الإحداثيات: ${lat.toFixed(6)}, ${lng.toFixed(6)}`;
-//     const geo = await reverseGeocodeNominatim(lat, lng);
-//     if (!geo) return;
-//     const detailed = geo.display_name || '';
-//     const address = geo.address || {};
-//     const detailedEl = document.querySelector('input[name="detailedAddress"]');
-//     if (detailedEl && (!detailedEl.value || detailedEl.value.trim() === '')) detailedEl.value = detailed;
-//     const cityCandidates = [address.city, address.town, address.village, address.county, address.state];
-//     const areaCandidates = [address.suburb, address.neighbourhood, address.hamlet, address.village, address.city_district];
-//     const cityVal = cityCandidates.find(Boolean);
-//     if (cityVal) { await setSelectValueWhenReady('select[name="city"]', cityVal); try { updateAreas(); } catch(e){} }
-//     const areaVal = areaCandidates.find(Boolean);
-//     if (areaVal) { await setSelectValueWhenReady('select[name="area"]', areaVal); }
-//   } catch (e) { console.error('handlePositionAndFill error', e); }
-// }
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// إصلاح handlePositionAndFill
-const originalHandlePositionAndFill = handlePositionAndFill;
-handlePositionAndFill = async function(lat, lng) {
-    try {
-        const mapEl = document.querySelector('input[name="mapLink"]') || document.getElementById('mapLinkInput');
-        if (mapEl) {
-            mapEl.value = buildGoogleMapsLink(lat, lng);
-            try { mapEl.dispatchEvent(new Event('input', { bubbles: true })); } catch(e){}
-            try { mapEl.dispatchEvent(new Event('change', { bubbles: true })); } catch(e){}
-        }
-        const msgEl = document.getElementById('placeStatusMessage'); 
-        if (msgEl) msgEl.textContent = `الإحداثيات: ${lat.toFixed(6)}, ${lng.toFixed(6)}`; // إصلاح هنا
-        const geo = await reverseGeocodeNominatim(lat, lng);
-        if (!geo) return;
-        const detailed = geo.display_name || '';
-        const address = geo.address || {};
-        const detailedEl = document.querySelector('input[name="detailedAddress"]');
-        if (detailedEl && (!detailedEl.value || detailedEl.value.trim() === '')) detailedEl.value = detailed;
-        const cityCandidates = [address.city, address.town, address.village, address.county, address.state];
-        const areaCandidates = [address.suburb, address.neighbourhood, address.hamlet, address.village, address.city_district];
-        const cityVal = cityCandidates.find(Boolean);
-        if (cityVal) { await setSelectValueWhenReady('select[name="city"]', cityVal); try { updateAreas(); } catch(e){} }
-        const areaVal = areaCandidates.find(Boolean);
-        if (areaVal) { await setSelectValueWhenReady('select[name="area"]', areaVal); }
-    } catch (e) { console.error('handlePositionAndFill error', e); }
-};
-
-// إصلاح updateInlinePackageInfoCard
-const originalUpdateInlinePackageInfoCard = updateInlinePackageInfoCard;
-updateInlinePackageInfoCard = function(place) {
-    try {
-        const card = document.getElementById('packageInfoCard');
-        const text = document.getElementById('packageInfoText');
-        const countdown = document.getElementById('packageInfoCountdown');
-        if (!card || !text || !countdown) return;
-        card.style.display = 'none'; text.textContent = ''; countdown.textContent = ''; countdown.className = 'package-countdown'; clearInterval(countdown._timer);
-
-        const raw = place.raw || {};
-        const pkgStatus = String(raw['حالة الباقة'] || '').trim();
-        const pkgId = String(raw['الباقة'] || '').trim();
-        const startRaw = raw['تاريخ بداية الاشتراك'] || '';
-        const endRaw = raw['تاريخ نهاية الاشتراك'] || '';
-        const startDate = parseDateISO(startRaw);
-        const endDate = parseDateISO(endRaw);
-
-        let packageName = '';
-        try {
-            if (window.lastLookups && Array.isArray(lastLookups.packages)) {
-                const f = lastLookups.packages.find(p => String(p.id) === pkgId);
-                if (f) packageName = f.name;
-            }
-        } catch {}
-
-        if (!pkgStatus) {
-            card.style.display = 'block';
-            text.textContent = 'باقتك الحالية: لا يوجد اشتراك';
-            return;
-        }
-
-        if (pkgStatus === 'مفعلة') {
-            const today = new Date();
-            let remaining = (startDate && endDate) ? daysBetween(today, endDate) : null;
-            if (remaining !== null && remaining < 0) remaining = 0;
-            const pn = packageName || (pkgId ? `ID ${pkgId}` : 'غير معروفة');
-            
-            // إصلاح هنا - التحقق من صلاحية التاريخ
-            const eTxt = (endDate && !isNaN(endDate.getTime())) ? endDate.formatDateSafe().split('T')[0] : '';
-            text.textContent = `باقتك الحالية: ${pn}${eTxt ? ` — تنتهي في ${eTxt}` : ''}${remaining !== null ? ` — المتبقي ${remaining} يوم` : ''}`;
-            card.style.display = 'block';
-
-            if (endDate && !isNaN(endDate.getTime())) {
-                const update = () => {
-                    const dh = diffDaysHours(new Date(), endDate);
-                    const days = dh.days ?? 0;
-                    const hours = dh.hours ?? 0;
-                    countdown.textContent = `العدّاد: ${days} يوم و${hours} ساعة`;
-                    countdown.classList.remove('countdown-ok','countdown-warn','countdown-crit');
-                    if (dh.ms <= 48*60*60*1000) countdown.classList.add('countdown-crit');
-                    else if (dh.ms <= 7*24*60*60*1000) countdown.classList.add('countdown-warn');
-                    else countdown.classList.add('countdown-ok');
-                };
-                update();
-                clearInterval(countdown._timer);
-                countdown._timer = setInterval(update, 60 * 1000);
-            }
-            return;
-        }
-
-        // ... باقي الكود بنفس المنطق مع التصحيح
-    } catch (e) {
-        console.warn('updateInlinePackageInfoCard error', e);
+async function handlePositionAndFill(lat, lng) {
+  try {
+    const mapEl = document.querySelector('input[name="mapLink"]') || document.getElementById('mapLinkInput');
+    if (mapEl) {
+      mapEl.value = buildGoogleMapsLink(lat, lng);
+      try { mapEl.dispatchEvent(new Event('input', { bubbles: true })); } catch(e){}
+      try { mapEl.dispatchEvent(new Event('change', { bubbles: true })); } catch(e){}
     }
-};
-
-
-
-
-
-
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    const msgEl = document.getElementById('placeStatusMessage'); if (msgEl) msg.textContent = `الإحداثيات: ${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+    const geo = await reverseGeocodeNominatim(lat, lng);
+    if (!geo) return;
+    const detailed = geo.display_name || '';
+    const address = geo.address || {};
+    const detailedEl = document.querySelector('input[name="detailedAddress"]');
+    if (detailedEl && (!detailedEl.value || detailedEl.value.trim() === '')) detailedEl.value = detailed;
+    const cityCandidates = [address.city, address.town, address.village, address.county, address.state];
+    const areaCandidates = [address.suburb, address.neighbourhood, address.hamlet, address.village, address.city_district];
+    const cityVal = cityCandidates.find(Boolean);
+    if (cityVal) { await setSelectValueWhenReady('select[name="city"]', cityVal); try { updateAreas(); } catch(e){} }
+    const areaVal = areaCandidates.find(Boolean);
+    if (areaVal) { await setSelectValueWhenReady('select[name="area"]', areaVal); }
+  } catch (e) { console.error('handlePositionAndFill error', e); }
+}
 function requestGeolocationOnce(options = { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }) {
   return new Promise((resolve, reject) => {
     if (!navigator.geolocation) return reject(new Error('Geolocation not supported'));
@@ -1506,9 +1390,7 @@ function initMapAutoLocate() {
   if (btn) {
     btn.addEventListener('click', async () => {
       btn.disabled = true; const old = btn.textContent; btn.textContent = 'جاري تحديد الموقع...';
-      //await attemptAutoLocate(true);
-      try { if (typeof attemptAutoLocate === 'function') attemptAutoLocate(false); } catch(e) {}
-      
+      await attemptAutoLocate(true);
       btn.disabled = false; btn.textContent = old;
     });
   }
@@ -1671,16 +1553,15 @@ async function refreshPackageUIFromDashboard() {
       if (btn) { btn.disabled = true; btn.style.opacity = '0.8'; btn.textContent = 'الاشتراك مُفعّل'; }
       let msg = 'حالة الباقة: مفعلة';
       if (startDate && endDate) {
-        const sTxt = startDate.formatDateSafe().split('T')[0];
-        const eTxt = formatDateSafe(endDate)
-        //endDate.toISOString().split('T')[0];
+        const sTxt = startDate.toISOString().split('T')[0];
+        const eTxt = endDate.toISOString().split('T')[0];
         msg += ` — البداية: ${sTxt} · النهاية: ${eTxt}${remaining !== null ? ` · المتبقي: ${remaining} يوم` : ''}`;
       }
       if (hint) { hint.textContent = msg; hint.classList.add('active'); }
 
       [card, inlineCard].forEach(c => { if (c) c.style.display = 'block'; });
       const pn = packageName || (pkgId ? `ID ${pkgId}` : 'غير معروفة');
-      const eTxt = endDate ? formatDateSafe(endDate) : '';
+      const eTxt = endDate ? endDate.toISOString().split('T')[0] : '';
       const remTxt = remaining !== null ? ` — المتبقي ${remaining} يوم` : '';
       if (cardText) cardText.textContent = `باقتك الحالية: ${pn}${eTxt ? ` — تنتهي في ${eTxt}` : ''}${remTxt}`;
       if (inlineText) inlineText.textContent = `باقتك الحالية: ${pn}${eTxt ? ` — تنتهي في ${eTxt}` : ''}${remTxt}`;
@@ -1713,16 +1594,14 @@ async function refreshPackageUIFromDashboard() {
       if (btn) { btn.disabled = false; btn.style.opacity = '1'; btn.textContent = 'تجديد الاشتراك'; }
       let msg = 'حالة الباقة: منتهية';
       if (startDate && endDate) {
-        //const sTxt = startDate.toISOString().split('T')[0];
-        const sTxt = startDate.formatDateSafe().split('T')[0];
-        const eTxt = formatDateSafe(endDate)
-        //endDate.toISOString().split('T')[0];
+        const sTxt = startDate.toISOString().split('T')[0];
+        const eTxt = endDate.toISOString().split('T')[0];
         msg += ` — البداية: ${sTxt} · النهاية: ${eTxt}`;
       }
       if (hint) { hint.textContent = msg; hint.classList.add('expired'); }
       [card, inlineCard].forEach(c => { if (c) c.style.display = 'block'; });
       const pn = packageName || (pkgId ? `ID ${pkgId}` : 'غير معروفة');
-      const eTxt = endDate ? endDate.formatDateSafe().split('T')[0] : '';
+      const eTxt = endDate ? endDate.toISOString().split('T')[0] : '';
       if (cardText) cardText.textContent = `باقتك الحالية: ${pn} — الحالة: منتهية${eTxt ? ` — انتهت في ${eTxt}` : ''}`;
       if (inlineText) inlineText.textContent = `باقتك الحالية: ${pn} — الحالة: منتهية${eTxt ? ` — انتهت في ${eTxt}` : ''}`;
       return;
@@ -1890,7 +1769,7 @@ function updateInlinePackageInfoCard(place) {
       let remaining = (startDate && endDate) ? daysBetween(today, endDate) : null;
       if (remaining !== null && remaining < 0) remaining = 0;
       const pn = packageName || (pkgId ? `ID ${pkgId}` : 'غير معروفة');
-      const eTxt = endDate ? endDate.formatDateSafe().split('T')[0] : '';
+      const eTxt = endDate ? endDate.toISOString().split('T')[0] : '';
       text.textContent = `باقتك الحالية: ${pn}${eTxt ? ` — تنتهي في ${eTxt}` : ''}${remaining !== null ? ` — المتبقي ${remaining} يوم` : ''}`;
       card.style.display = 'block';
 
@@ -1921,7 +1800,7 @@ function updateInlinePackageInfoCard(place) {
 
     if (pkgStatus === 'منتهية') {
       const pn = packageName || (pkgId ? `ID ${pkgId}` : 'غير معروفة');
-      const eTxt = endDate ? endDate.formatDateSafe().split('T')[0] : '';
+      const eTxt = endDate ? endDate.toISOString().split('T')[0] : '';
       text.textContent = `باقتك الحالية: ${pn} — الحالة: منتهية${eTxt ? ` — انتهت في ${eTxt}` : ''}`;
       card.style.display = 'block';
       return;
@@ -1935,7 +1814,6 @@ function updateInlinePackageInfoCard(place) {
     console.warn('updateInlinePackageInfoCard error', e);
   }
 }
-
 
 
 
