@@ -1342,29 +1342,132 @@ function initMapLinkAutoFill() {
 }
 
 function buildGoogleMapsLink(lat, lng) { return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(lat + ',' + lng)}`; }
-async function handlePositionAndFill(lat, lng) {
-  try {
-    const mapEl = document.querySelector('input[name="mapLink"]') || document.getElementById('mapLinkInput');
-    if (mapEl) {
-      mapEl.value = buildGoogleMapsLink(lat, lng);
-      try { mapEl.dispatchEvent(new Event('input', { bubbles: true })); } catch(e){}
-      try { mapEl.dispatchEvent(new Event('change', { bubbles: true })); } catch(e){}
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// async function handlePositionAndFill(lat, lng) {
+//   try {
+//     const mapEl = document.querySelector('input[name="mapLink"]') || document.getElementById('mapLinkInput');
+//     if (mapEl) {
+//       mapEl.value = buildGoogleMapsLink(lat, lng);
+//       try { mapEl.dispatchEvent(new Event('input', { bubbles: true })); } catch(e){}
+//       try { mapEl.dispatchEvent(new Event('change', { bubbles: true })); } catch(e){}
+//     }
+//     const msgEl = document.getElementById('placeStatusMessage'); if (msgEl) msgEl.textContent = `الإحداثيات: ${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+//     const geo = await reverseGeocodeNominatim(lat, lng);
+//     if (!geo) return;
+//     const detailed = geo.display_name || '';
+//     const address = geo.address || {};
+//     const detailedEl = document.querySelector('input[name="detailedAddress"]');
+//     if (detailedEl && (!detailedEl.value || detailedEl.value.trim() === '')) detailedEl.value = detailed;
+//     const cityCandidates = [address.city, address.town, address.village, address.county, address.state];
+//     const areaCandidates = [address.suburb, address.neighbourhood, address.hamlet, address.village, address.city_district];
+//     const cityVal = cityCandidates.find(Boolean);
+//     if (cityVal) { await setSelectValueWhenReady('select[name="city"]', cityVal); try { updateAreas(); } catch(e){} }
+//     const areaVal = areaCandidates.find(Boolean);
+//     if (areaVal) { await setSelectValueWhenReady('select[name="area"]', areaVal); }
+//   } catch (e) { console.error('handlePositionAndFill error', e); }
+// }
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// إصلاح handlePositionAndFill
+const originalHandlePositionAndFill = handlePositionAndFill;
+handlePositionAndFill = async function(lat, lng) {
+    try {
+        const mapEl = document.querySelector('input[name="mapLink"]') || document.getElementById('mapLinkInput');
+        if (mapEl) {
+            mapEl.value = buildGoogleMapsLink(lat, lng);
+            try { mapEl.dispatchEvent(new Event('input', { bubbles: true })); } catch(e){}
+            try { mapEl.dispatchEvent(new Event('change', { bubbles: true })); } catch(e){}
+        }
+        const msgEl = document.getElementById('placeStatusMessage'); 
+        if (msgEl) msgEl.textContent = `الإحداثيات: ${lat.toFixed(6)}, ${lng.toFixed(6)}`; // إصلاح هنا
+        const geo = await reverseGeocodeNominatim(lat, lng);
+        if (!geo) return;
+        const detailed = geo.display_name || '';
+        const address = geo.address || {};
+        const detailedEl = document.querySelector('input[name="detailedAddress"]');
+        if (detailedEl && (!detailedEl.value || detailedEl.value.trim() === '')) detailedEl.value = detailed;
+        const cityCandidates = [address.city, address.town, address.village, address.county, address.state];
+        const areaCandidates = [address.suburb, address.neighbourhood, address.hamlet, address.village, address.city_district];
+        const cityVal = cityCandidates.find(Boolean);
+        if (cityVal) { await setSelectValueWhenReady('select[name="city"]', cityVal); try { updateAreas(); } catch(e){} }
+        const areaVal = areaCandidates.find(Boolean);
+        if (areaVal) { await setSelectValueWhenReady('select[name="area"]', areaVal); }
+    } catch (e) { console.error('handlePositionAndFill error', e); }
+};
+
+// إصلاح updateInlinePackageInfoCard
+const originalUpdateInlinePackageInfoCard = updateInlinePackageInfoCard;
+updateInlinePackageInfoCard = function(place) {
+    try {
+        const card = document.getElementById('packageInfoCard');
+        const text = document.getElementById('packageInfoText');
+        const countdown = document.getElementById('packageInfoCountdown');
+        if (!card || !text || !countdown) return;
+        card.style.display = 'none'; text.textContent = ''; countdown.textContent = ''; countdown.className = 'package-countdown'; clearInterval(countdown._timer);
+
+        const raw = place.raw || {};
+        const pkgStatus = String(raw['حالة الباقة'] || '').trim();
+        const pkgId = String(raw['الباقة'] || '').trim();
+        const startRaw = raw['تاريخ بداية الاشتراك'] || '';
+        const endRaw = raw['تاريخ نهاية الاشتراك'] || '';
+        const startDate = parseDateISO(startRaw);
+        const endDate = parseDateISO(endRaw);
+
+        let packageName = '';
+        try {
+            if (window.lastLookups && Array.isArray(lastLookups.packages)) {
+                const f = lastLookups.packages.find(p => String(p.id) === pkgId);
+                if (f) packageName = f.name;
+            }
+        } catch {}
+
+        if (!pkgStatus) {
+            card.style.display = 'block';
+            text.textContent = 'باقتك الحالية: لا يوجد اشتراك';
+            return;
+        }
+
+        if (pkgStatus === 'مفعلة') {
+            const today = new Date();
+            let remaining = (startDate && endDate) ? daysBetween(today, endDate) : null;
+            if (remaining !== null && remaining < 0) remaining = 0;
+            const pn = packageName || (pkgId ? `ID ${pkgId}` : 'غير معروفة');
+            
+            // إصلاح هنا - التحقق من صلاحية التاريخ
+            const eTxt = (endDate && !isNaN(endDate.getTime())) ? endDate.toISOString().split('T')[0] : '';
+            text.textContent = `باقتك الحالية: ${pn}${eTxt ? ` — تنتهي في ${eTxt}` : ''}${remaining !== null ? ` — المتبقي ${remaining} يوم` : ''}`;
+            card.style.display = 'block';
+
+            if (endDate && !isNaN(endDate.getTime())) {
+                const update = () => {
+                    const dh = diffDaysHours(new Date(), endDate);
+                    const days = dh.days ?? 0;
+                    const hours = dh.hours ?? 0;
+                    countdown.textContent = `العدّاد: ${days} يوم و${hours} ساعة`;
+                    countdown.classList.remove('countdown-ok','countdown-warn','countdown-crit');
+                    if (dh.ms <= 48*60*60*1000) countdown.classList.add('countdown-crit');
+                    else if (dh.ms <= 7*24*60*60*1000) countdown.classList.add('countdown-warn');
+                    else countdown.classList.add('countdown-ok');
+                };
+                update();
+                clearInterval(countdown._timer);
+                countdown._timer = setInterval(update, 60 * 1000);
+            }
+            return;
+        }
+
+        // ... باقي الكود بنفس المنطق مع التصحيح
+    } catch (e) {
+        console.warn('updateInlinePackageInfoCard error', e);
     }
-    const msgEl = document.getElementById('placeStatusMessage'); if (msgEl) msg.textContent = `الإحداثيات: ${lat.toFixed(6)}, ${lng.toFixed(6)}`;
-    const geo = await reverseGeocodeNominatim(lat, lng);
-    if (!geo) return;
-    const detailed = geo.display_name || '';
-    const address = geo.address || {};
-    const detailedEl = document.querySelector('input[name="detailedAddress"]');
-    if (detailedEl && (!detailedEl.value || detailedEl.value.trim() === '')) detailedEl.value = detailed;
-    const cityCandidates = [address.city, address.town, address.village, address.county, address.state];
-    const areaCandidates = [address.suburb, address.neighbourhood, address.hamlet, address.village, address.city_district];
-    const cityVal = cityCandidates.find(Boolean);
-    if (cityVal) { await setSelectValueWhenReady('select[name="city"]', cityVal); try { updateAreas(); } catch(e){} }
-    const areaVal = areaCandidates.find(Boolean);
-    if (areaVal) { await setSelectValueWhenReady('select[name="area"]', areaVal); }
-  } catch (e) { console.error('handlePositionAndFill error', e); }
-}
+};
+
+
+
+
+
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 function requestGeolocationOnce(options = { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }) {
   return new Promise((resolve, reject) => {
     if (!navigator.geolocation) return reject(new Error('Geolocation not supported'));
